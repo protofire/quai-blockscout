@@ -16,6 +16,17 @@ defmodule EthereumJSONRPC.Block.ByNumber do
         number
       end
 
-    EthereumJSONRPC.request(%{id: id, method: "eth_getBlockByNumber", params: [block_number, hydrated]})
+    # Not sure that this is correct
+    if is_list(block_number) do
+      EthereumJSONRPC.request(%{
+        id: id,
+        method: "quai_getBlockByNumber",
+        params: [integer_to_quantity(Enum.at(block_number, String.to_integer(System.get_env("CHAIN_INDEX")))), hydrated]
+      })
+    else
+      EthereumJSONRPC.request(%{id: id, method: "quai_getBlockByNumber", params: [block_number, hydrated]})
+    end
+
+    # EthereumJSONRPC.request(%{id: id, method: "eth_getBlockByNumber", params: [block_number, hydrated]})
   end
 end

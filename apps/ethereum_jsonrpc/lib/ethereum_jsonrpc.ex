@@ -200,7 +200,7 @@ defmodule EthereumJSONRPC do
           _ -> false
         end)
       else
-        params_list
+        remove_external_addresses(params_list)
       end
 
     filtered_params_in_range =
@@ -219,6 +219,47 @@ defmodule EthereumJSONRPC do
            |> json_rpc(json_rpc_named_arguments) do
       {:ok, FetchedBalances.from_responses(responses, id_to_params)}
     end
+  end
+
+  @quai_contexts [
+    %{shard: "cyprus1", context: 2, byte: ["00", "1d"]},
+    %{shard: "cyprus2", context: 2, byte: ["1e", "3a"]},
+    %{shard: "cyprus3", context: 2, byte: ["3b", "57"]},
+    %{shard: "paxos1", context: 2, byte: ["58", "73"]},
+    %{shard: "paxos2", context: 2, byte: ["74", "8f"]},
+    %{shard: "paxos3", context: 2, byte: ["90", "ab"]},
+    %{shard: "hydra1", context: 2, byte: ["ac", "c7"]},
+    %{shard: "hydra2", context: 2, byte: ["c8", "e3"]},
+    %{shard: "hydra3", context: 2, byte: ["e4", "ff"]}
+  ]
+
+  def get_shard_from_address(address) do
+    get_in(
+      Enum.at(
+        Enum.filter(
+          @quai_contexts,
+          fn obj ->
+            num =
+              address
+              |> String.slice(2, 2)
+              |> String.to_integer(16)
+
+            start = String.to_integer(Enum.at(obj.byte, 0), 16)
+            finish = String.to_integer(Enum.at(obj.byte, 1), 16)
+            num >= start and num <= finish
+          end
+        ),
+        0
+      ),
+      [:shard]
+    )
+  end
+
+  def remove_external_addresses(addresses) do
+    addresses
+    |> Enum.reject(fn address ->
+      get_shard_from_address(address.hash_data) != String.downcase(System.get_env("SUBNETWORK"))
+    end)
   end
 
   @doc """
@@ -481,6 +522,13 @@ defmodule EthereumJSONRPC do
     case Integer.parse(string) do
       {integer, ""} -> integer
       _ -> nil
+    end
+  end
+
+  def quantity_to_integer(list) when is_list(list) do
+    case Integer.parse(Enum.at(list, String.to_integer(System.get_env("CHAIN_INDEX")))) do
+      {integer, ""} -> integer
+      _ -> :error
     end
   end
 

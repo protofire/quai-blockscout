@@ -58,9 +58,16 @@ defmodule Explorer.Chain.Import.Stage.BlockReferencing do
     Runner.Beacon.BlobTransactions
   ]
 
+  @quai_runners [
+    Runner.ExternalTransactions
+  ]
+
   @impl Stage
   def runners do
     case Application.get_env(:explorer, :chain_type) do
+      "quai" ->
+        @default_runners ++ @quai_runners
+
       "optimism" ->
         @default_runners ++ @optimism_runners
 

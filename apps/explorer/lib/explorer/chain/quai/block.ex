@@ -9,8 +9,22 @@ defmodule Explorer.Chain.Block.Schema do
                         "quai" ->
                           elem(
                             quote do
-                              field(:transactions_root, Hash.Full)
-                              field(:ext_transactions_root, Hash.Full)
+                              field(:ext_transactions, {:array, Hash.Full})
+                              field(:ext_rollup_root, {:array, Hash.Full})
+                              field(:sub_manifest, {:array, Hash.Full})
+                              field(:manifest_hash_full, {:array, Hash.Full})
+                              field(:number_full, {:array, :integer})
+                              field(:parent_hash_full, {:array, Hash.Full})
+                              field(:location, :string)
+                              field(:is_prime_coincident, :boolean)
+                              field(:is_region_coincident, :boolean)
+
+                              field(:total_entropy, :decimal)
+                              field(:total_delta_s, :decimal)
+                              field(:parent_entropy, :decimal)
+                              field(:parent_delta_s, :decimal)
+                              field(:parent_entropy_full, {:array, :decimal})
+                              field(:parent_delta_s_full, {:array, :decimal})
                             end,
                             2
                           )
@@ -65,7 +79,7 @@ defmodule Explorer.Chain.Block.Schema do
         field(:number, :integer, null: false)
         field(:size, :integer)
         field(:timestamp, :utc_datetime_usec, null: false)
-        field(:total_difficulty, :decimal)
+        # field(:total_difficulty, :decimal)
         field(:refetch_needed, :boolean)
         field(:base_fee_per_gas, Wei)
         field(:is_empty, :boolean)
@@ -83,7 +97,6 @@ defmodule Explorer.Chain.Block.Schema do
         has_many(:uncles, through: [:uncle_relations, :uncle], references: :hash)
 
         has_many(:transactions, Transaction, references: :hash)
-        has_many(:ext_transactions, ExternalTransaction)
         has_many(:transaction_forks, Transaction.Fork, foreign_key: :uncle_hash, references: :hash)
 
         has_many(:rewards, Reward, foreign_key: :block_hash, references: :hash)
@@ -109,12 +122,16 @@ defmodule Explorer.Chain.Block do
 
   use Explorer.Schema
 
-  alias Explorer.Chain.{Block, Hash, Transaction, ExternalTransaction, Wei}
+  alias Explorer.Chain.{Block, Hash, Transaction, Wei}
   alias Explorer.Chain.Block.{EmissionReward, Reward}
   alias Explorer.Repo
 
   @optional_attrs ~w(size refetch_needed total_difficulty difficulty base_fee_per_gas)a
                   |> (&(case Application.compile_env(:explorer, :chain_type) do
+                          "quai" ->
+                            &1 ++
+                              ~w(difficulty_full ext_rollup_root_full ext_transactions_root_full ext_transactions sub_manifest gas_limit_full gas_used_full logs_bloom_full manifest_hash_full miner_full number_full parent_hash_full receipts_root_full sha3_uncles_full state_root_full transactions_root_full location)a
+
                           "rsk" ->
                             &1 ++
                               ~w(minimum_gas_price bitcoin_merged_mining_header bitcoin_merged_mining_coinbase_transaction bitcoin_merged_mining_merkle_proof hash_for_merged_mining)a

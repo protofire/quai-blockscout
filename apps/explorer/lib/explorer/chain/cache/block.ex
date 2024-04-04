@@ -24,6 +24,23 @@ defmodule Explorer.Chain.Cache.Block do
 
   @cache_key "block_count"
 
+  @spec last_coincident(String) :: non_neg_integer()
+  def last_coincident(context) do
+    result = %Postgrex.Result{} = Repo.query!("SELECT *
+FROM blocks
+WHERE (is_" <> context <> "_coincident = true)
+ORDER BY number DESC
+LIMIT 1;
+")
+    result = result |> Map.get(:rows)
+
+    if result |> Kernel.length() == 0 do
+      nil
+    else
+      result |> List.first() |> Enum.at(7)
+    end
+  end
+
   @doc """
   Estimated count of `t:Explorer.Chain.Block.t/0`.
 

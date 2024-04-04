@@ -12,6 +12,9 @@ defmodule EthereumJSONRPC.Transaction do
   alias EthereumJSONRPC
 
   case Application.compile_env(:explorer, :chain_type) do
+    "quai" ->
+      @chain_type_fields quote(do: [])
+
     "ethereum" ->
       @chain_type_fields quote(
                            do: [
@@ -260,6 +263,50 @@ defmodule EthereumJSONRPC.Transaction do
           "blockNumber" => block_number,
           "from" => from_address_hash,
           "gas" => gas,
+          "hash" => hash,
+          "input" => input,
+          "nonce" => nonce,
+          "to" => to_address_hash,
+          "transactionIndex" => index,
+          "value" => value,
+          "type" => type,
+          "maxPriorityFeePerGas" => max_priority_fee_per_gas,
+          "maxFeePerGas" => max_fee_per_gas
+        } = transaction
+      ) do
+    result = %{
+      block_hash: block_hash,
+      block_number: block_number,
+      from_address_hash: from_address_hash,
+      gas: gas,
+      gas_price: max_priority_fee_per_gas,
+      hash: hash,
+      index: index,
+      input: input,
+      nonce: nonce,
+      to_address_hash: to_address_hash,
+      value: value,
+      transaction_index: index,
+      type: type,
+      max_priority_fee_per_gas: max_priority_fee_per_gas,
+      max_fee_per_gas: max_fee_per_gas
+    }
+
+    put_if_present(transaction, result, [
+      {"creates", :created_contract_address_hash},
+      {"block_timestamp", :block_timestamp},
+      {"r", :r},
+      {"s", :s},
+      {"v", :v}
+    ])
+  end
+
+  def do_elixir_to_params(
+        %{
+          "blockHash" => block_hash,
+          "blockNumber" => block_number,
+          "from" => from_address_hash,
+          "gas" => gas,
           "gasPrice" => gas_price,
           "hash" => hash,
           "input" => input,
@@ -301,49 +348,49 @@ defmodule EthereumJSONRPC.Transaction do
 
   # txpool_content method on Erigon node returns tx data
   # without gas price
-  def do_elixir_to_params(
-        %{
-          "blockHash" => block_hash,
-          "blockNumber" => block_number,
-          "from" => from_address_hash,
-          "gas" => gas,
-          "hash" => hash,
-          "input" => input,
-          "nonce" => nonce,
-          "to" => to_address_hash,
-          "transactionIndex" => index,
-          "value" => value,
-          "type" => type,
-          "maxPriorityFeePerGas" => max_priority_fee_per_gas,
-          "maxFeePerGas" => max_fee_per_gas
-        } = transaction
-      ) do
-    result = %{
-      block_hash: block_hash,
-      block_number: block_number,
-      from_address_hash: from_address_hash,
-      gas: gas,
-      gas_price: nil,
-      hash: hash,
-      index: index,
-      input: input,
-      nonce: nonce,
-      to_address_hash: to_address_hash,
-      value: value,
-      transaction_index: index,
-      type: type,
-      max_priority_fee_per_gas: max_priority_fee_per_gas,
-      max_fee_per_gas: max_fee_per_gas
-    }
+  # def do_elixir_to_params(
+  #       %{
+  #         "blockHash" => block_hash,
+  #         "blockNumber" => block_number,
+  #         "from" => from_address_hash,
+  #         "gas" => gas,
+  #         "hash" => hash,
+  #         "input" => input,
+  #         "nonce" => nonce,
+  #         "to" => to_address_hash,
+  #         "transactionIndex" => index,
+  #         "value" => value,
+  #         "type" => type,
+  #         "maxPriorityFeePerGas" => max_priority_fee_per_gas,
+  #         "maxFeePerGas" => max_fee_per_gas
+  #       } = transaction
+  #     ) do
+  #   result = %{
+  #     block_hash: block_hash,
+  #     block_number: block_number,
+  #     from_address_hash: from_address_hash,
+  #     gas: gas,
+  #     gas_price: nil,
+  #     hash: hash,
+  #     index: index,
+  #     input: input,
+  #     nonce: nonce,
+  #     to_address_hash: to_address_hash,
+  #     value: value,
+  #     transaction_index: index,
+  #     type: type,
+  #     max_priority_fee_per_gas: max_priority_fee_per_gas,
+  #     max_fee_per_gas: max_fee_per_gas
+  #   }
 
-    put_if_present(transaction, result, [
-      {"creates", :created_contract_address_hash},
-      {"block_timestamp", :block_timestamp},
-      {"r", :r},
-      {"s", :s},
-      {"v", :v}
-    ])
-  end
+  #   put_if_present(transaction, result, [
+  #     {"creates", :created_contract_address_hash},
+  #     {"block_timestamp", :block_timestamp},
+  #     {"r", :r},
+  #     {"s", :s},
+  #     {"v", :v}
+  #   ])
+  # end
 
   # for legacy txs without maxPriorityFeePerGas and maxFeePerGas
   def do_elixir_to_params(

@@ -72,6 +72,7 @@ defmodule Indexer.Block.Fetcher do
                 block_second_degree_relations: Import.Runner.options(),
                 block_rewards: Import.Runner.options(),
                 broadcast: term(),
+                ext_transactions: Import.Runner.options(),
                 logs: Import.Runner.options(),
                 token_transfers: Import.Runner.options(),
                 tokens: Import.Runner.options(),
@@ -141,6 +142,7 @@ defmodule Indexer.Block.Fetcher do
            %Blocks{
              blocks_params: blocks_params,
              transactions_params: transactions_params_without_receipts,
+             ext_transactions_params: ext_transactions,
              withdrawals_params: withdrawals_params,
              block_second_degree_relations_params: block_second_degree_relations_params,
              errors: blocks_errors
@@ -216,7 +218,9 @@ defmodule Indexer.Block.Fetcher do
            tokens: %{params: tokens},
            transactions: %{params: transactions_with_receipts},
            withdrawals: %{params: withdrawals_params},
-           token_instances: %{params: token_instances}
+           token_instances: %{params: token_instances},
+           # Quai specific
+           ext_transactions: %{params: ext_transactions}
          },
          chain_type_import_options = %{
            transactions_with_receipts: transactions_with_receipts,
