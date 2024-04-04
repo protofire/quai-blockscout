@@ -4,6 +4,7 @@ defmodule EthereumJSONRPC.Block do
   and [`eth_getBlockByNumber`](https://github.com/ethereum/wiki/wiki/JSON-RPC#eth_getblockbynumber).
   """
 
+  @quai_attrs ~w(manifestHash number parentHash parentEntropy parentDeltaS)a
   import EthereumJSONRPC, only: [quantity_to_integer: 1, timestamp_to_datetime: 1]
 
   alias EthereumJSONRPC.{Transactions, Uncles, Withdrawals}
@@ -708,6 +709,11 @@ defmodule EthereumJSONRPC.Block do
   def elixir_to_transactions(%{"transactions" => transactions}), do: transactions
 
   def elixir_to_transactions(_), do: []
+
+  @spec elixir_to_ext_transactions(elixir) :: Transactions.elixir()
+  def elixir_to_ext_transactions(%{"extTransactions" => extTransactions}), do: extTransactions
+
+  def elixir_to_ext_transactions(_), do: []
 
   @doc """
   Get `t:EthereumJSONRPC.Uncles.elixir/0` from `t:elixir/0`.

@@ -48,6 +48,7 @@ defmodule Explorer.Chain do
     Address.CurrentTokenBalance,
     Address.TokenBalance,
     Block,
+    ExternalTransaction,
     BlockNumberHelper,
     CurrencyHelper,
     Data,
@@ -1444,7 +1445,7 @@ defmodule Explorer.Chain do
         options \\ []
       )
       when is_list(options) do
-    necessity_by_association = Keyword.get(options, :necessity_by_association, %{})
+    _necessity_by_association = Keyword.get(options, :necessity_by_association, %{})
 
     ExternalTransaction
     |> where(hash: ^hash)
@@ -3078,15 +3079,15 @@ defmodule Explorer.Chain do
   def transaction_to_status(%ExternalTransaction{status: :error, error: error}) when is_binary(error),
     do: {:error, error}
 
-  def transaction_to_revert_reason(transaction) do
-    %ExternalTransaction{revert_reason: revert_reason} = transaction
+  # def transaction_to_revert_reason(transaction) do
+  #   %ExternalTransaction{revert_reason: revert_reason} = transaction
 
-    if revert_reason == nil do
-      fetch_tx_revert_reason(transaction)
-    else
-      revert_reason
-    end
-  end
+  #   if revert_reason == nil do
+  #     fetch_tx_revert_reason(transaction)
+  #   else
+  #     revert_reason
+  #   end
+  # end
 
   @doc """
   Converts `transaction` to the status of the `t:Explorer.Chain.Transaction.t/0` whether pending or collated.
@@ -3402,7 +3403,8 @@ defmodule Explorer.Chain do
   defp fetch_external_transactions_in_ascending_order_by_index(paging_options) do
     ExternalTransaction
     |> order_by([transaction], desc: transaction.block_number, asc: transaction.index)
-    |> handle_paging_options(paging_options)
+
+    # |> handle_paging_options(paging_options)
   end
 
   defp fetch_transactions_in_descending_order_by_block_and_index(paging_options) do
