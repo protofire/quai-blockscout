@@ -33,26 +33,28 @@ defmodule EthereumJSONRPC.Block do
   end
 
   case Application.compile_env(:explorer, :chain_type) do
-    # "quai" ->
-    #   coincidence = is_coincident(elixir)
-
-    #   @chain_type_fields quote(
-    #                        do: [
-    #                          ext_rollupRoot: EthereumJSONRPC.hash(),
-    #                          # TODO: We need external transactions type
-    #                          ext_transactions: EthereumJSONRPC.data(),
-    #                          ext_transactionsRoot: EthereumJSONRPC.hash(),
-    #                          location: EthereumJSONRPC.data(),
-    #                          manifest_hash: EthereumJSONRPC.data(),
-    #                          parent_deltaS: EthereumJSONRPC.data(),
-    #                          parent_entropy: EthereumJSONRPC.data(),
-    #                          sub_manifest: EthereumJSONRPC.data(),
-    #                          total_entropy: EthereumJSONRPC.data(),
-    #                          transactions_root_full: EthereumJSONRPC.hash(),
-    #                          is_prime_coincident: coincidence |> elem(0),
-    #                          is_region_coincident: coincidence |> elem(1)
-    #                        ]
-    #                      )
+    "quai" ->
+      @chain_type_fields quote(
+                           do: [
+                             total_difficulty: non_neg_integer(),
+                             ext_rollup_root: EthereumJSONRPC.hash(),
+                             ext_transactions: [EthereumJSONRPC.hash()],
+                             ext_transactions_root: EthereumJSONRPC.hash(),
+                             location: [EthereumJSONRPC.data()],
+                             manifest_hash: EthereumJSONRPC.hash(),
+                             manifest_hash_full: [EthereumJSONRPC.hash()],
+                             number_full: [EthereumJSONRPC.data()],
+                             order: non_neg_integer(),
+                             parent_delta_s: EthereumJSONRPC.data(),
+                             parent_delta_s_full: [EthereumJSONRPC.data()],
+                             parent_entropy: EthereumJSONRPC.data(),
+                             parent_entropy_full: [EthereumJSONRPC.data()],
+                             parent_hash: EthereumJSONRPC.hash(),
+                             parent_hash_full: [EthereumJSONRPC.hash()],
+                             sub_manifest: [EthereumJSONRPC.data()],
+                             total_entropy: EthereumJSONRPC.hash()
+                           ]
+                         )
 
     "rsk" ->
       @chain_type_fields quote(
@@ -61,7 +63,8 @@ defmodule EthereumJSONRPC.Block do
                              bitcoin_merged_mining_coinbase_transaction: EthereumJSONRPC.data(),
                              bitcoin_merged_mining_merkle_proof: EthereumJSONRPC.data(),
                              hash_for_merged_mining: EthereumJSONRPC.data(),
-                             minimum_gas_price: non_neg_integer()
+                             minimum_gas_price: non_neg_integer(),
+                             total_difficulty: non_neg_integer()
                            ]
                          )
 
@@ -70,7 +73,8 @@ defmodule EthereumJSONRPC.Block do
                            do: [
                              withdrawals_root: EthereumJSONRPC.hash(),
                              blob_gas_used: non_neg_integer(),
-                             excess_blob_gas: non_neg_integer()
+                             excess_blob_gas: non_neg_integer(),
+                             total_difficulty: non_neg_integer()
                            ]
                          )
 
@@ -97,7 +101,6 @@ defmodule EthereumJSONRPC.Block do
           size: non_neg_integer(),
           state_root: EthereumJSONRPC.hash(),
           timestamp: DateTime.t(),
-          # total_difficulty: non_neg_integer(),
           transactions_root: EthereumJSONRPC.hash(),
           uncles: [EthereumJSONRPC.hash()],
           base_fee_per_gas: non_neg_integer()
@@ -164,7 +167,6 @@ defmodule EthereumJSONRPC.Block do
 
   def from_response(%{id: id, result: block}, id_to_params) when is_map(id_to_params) do
     true = Map.has_key?(id_to_params, id)
-
     {:ok, map_keys(block)}
   end
 
@@ -332,122 +334,45 @@ defmodule EthereumJSONRPC.Block do
 
   defp do_elixir_to_params(
          %{
-           "difficulty" => difficulty,
-           "extraData" => extra_data,
-           "gasLimit" => gas_limit,
-           "gasUsed" => gas_used,
-           "hash" => hash,
-           "logsBloom" => logs_bloom,
-           "miner" => miner_hash,
-           "number" => number,
-           "parentHash" => parent_hash,
-           "receiptsRoot" => receipts_root,
-           "sha3Uncles" => sha3_uncles,
-           "size" => size,
-           "stateRoot" => state_root,
-           "timestamp" => timestamp,
-           "totalDifficulty" => total_difficulty,
-           "transactionsRoot" => transactions_root,
-           "uncles" => uncles,
-           "baseFeePerGas" => base_fee_per_gas
-         } = elixir
-       ) do
-    %{
-      difficulty: difficulty,
-      extra_data: extra_data,
-      gas_limit: gas_limit,
-      gas_used: gas_used,
-      hash: hash,
-      logs_bloom: logs_bloom,
-      miner_hash: miner_hash,
-      mix_hash: Map.get(elixir, "mixHash", "0x0"),
-      nonce: Map.get(elixir, "nonce", 0),
-      number: number,
-      parent_hash: parent_hash,
-      receipts_root: receipts_root,
-      sha3_uncles: sha3_uncles,
-      size: size,
-      state_root: state_root,
-      timestamp: timestamp,
-      total_difficulty: total_difficulty,
-      transactions_root: transactions_root,
-      uncles: uncles,
-      base_fee_per_gas: base_fee_per_gas
-    }
-  end
-
-  # Quai case
-  defp do_elixir_to_params(
-         %{
            "baseFeePerGas" => base_fee_per_gas,
            "difficulty" => difficulty,
-           "extTransactions" => ext_transactions,
-           "extTransactionsRoot" => ext_transactions_root,
-           "extRollupRoot" => ext_rollup_root,
            "extraData" => extra_data,
            "gasLimit" => gas_limit,
            "gasUsed" => gas_used,
            "hash" => hash,
-           "location" => location,
-           "manifestHashFull" => manifest_hash_full,
            "miner" => miner_hash,
-           "terminusHash" => terminus_hash,
+           "mixHash" => mix_hash,
+           "nonce" => nonce,
            "number" => number,
-           "numberFull" => number_full,
-           "order" => order,
-           "parentDeltaS" => parent_delta_s,
-           "parentDeltaSFull" => parent_delta_s_full,
-           "parentEntropy" => parent_entropy,
-           "parentEntropyFull" => parent_entropy_full,
            "parentHash" => parent_hash,
-           "parentHashFull" => parent_hash_full,
            "receiptsRoot" => receipts_root,
            "sha3Uncles" => sha3_uncles,
            "size" => size,
            "stateRoot" => state_root,
-           "subManifest" => sub_manifest,
            "timestamp" => timestamp,
-           "totalEntropy" => total_entropy,
+           "transactions" => transactions,
            "transactionsRoot" => transactions_root,
            "uncles" => uncles
          } = elixir
        ) do
-    coincidence = is_coincident(order)
-
     %{
       base_fee_per_gas: base_fee_per_gas,
       difficulty: difficulty,
-      ext_transactions: ext_transactions,
-      ext_transactions_root: ext_transactions_root,
-      ext_rollup_root: ext_rollup_root,
       extra_data: extra_data,
       gas_limit: gas_limit,
       gas_used: gas_used,
       hash: hash,
-      is_prime_coincident: coincidence |> elem(0),
-      is_region_coincident: coincidence |> elem(1),
-      location: location,
-      manifest_hash_full: manifest_hash_full,
       miner_hash: miner_hash,
-      # maybe consider doing this instead of changing the method header ?
-      mix_hash: Map.get(elixir, "mixHash", "0x0"),
-      nonce: Map.get(elixir, "nonce", 0),
+      mix_hash: mix_hash,
+      nonce: nonce,
       number: number,
-      number_full: number_full,
-      parent_delta_s: parent_delta_s,
-      parent_delta_s_full: parent_delta_s_full,
-      parent_entropy: parent_entropy,
-      parent_entropy_full: parent_entropy_full,
       parent_hash: parent_hash,
-      parent_hash_full: parent_hash_full,
       receipts_root: receipts_root,
       sha3_uncles: sha3_uncles,
       size: size,
       state_root: state_root,
-      sub_manifest: sub_manifest,
-      terminus_hash: terminus_hash,
       timestamp: timestamp,
-      total_entropy: total_entropy,
+      transactions: transactions,
       transactions_root: transactions_root,
       uncles: uncles
     }
@@ -589,15 +514,24 @@ defmodule EthereumJSONRPC.Block do
       "quai" ->
         params
         |> Map.merge(%{
-          extRollupRoot: Map.get(elixir, "extRollupRoot"),
-          extTransactions: Map.get(elixir, "extTransactions"),
-          extTransactionsRoot: Map.get(elixir, "extTransactionsRoot"),
+          ext_rollup_root: Map.get(elixir, "extRollupRoot"),
+          ext_transactions: Map.get(elixir, "extTransactions", []),
+          ext_transactions_root: Map.get(elixir, "extTransactionsRoot"),
           location: Map.get(elixir, "location"),
-          manifestHash: Map.get(elixir, "manifestHash"),
-          parentDeltaS: Map.get(elixir, "parentDeltaS"),
-          parentEntropy: Map.get(elixir, "parentEntropy"),
-          subManifest: Map.get(elixir, "subManifest"),
-          totalEntropy: Map.get(elixir, "totalEntropy")
+          manifest_hash: Map.get(elixir, "manifestHash"),
+          manifest_hash_full: Map.get(elixir, "manifestHashFull", []),
+          number: Map.get(elixir, "number"),
+          number_full: Map.get(elixir, "numberFull", []),
+          order: Map.get(elixir, "order"),
+          parent_delta_s: Map.get(elixir, "parentDeltaS"),
+          parent_delta_s_full: Map.get(elixir, "parentDeltaSFull", []),
+          parent_entropy: Map.get(elixir, "parentEntropy"),
+          parent_entropy_full: Map.get(elixir, "parentEntropyFull", []),
+          parent_hash: Map.get(elixir, "parentHash"),
+          parent_hash_full: Map.get(elixir, "parentHashFull", []),
+          sub_manifest: Map.get(elixir, "subManifest", []),
+          total_entropy: Map.get(elixir, "totalEntropy"),
+          total_difficulty: Map.get(elixir, "totalDifficulty", 0)
         })
 
       "rsk" ->
@@ -607,7 +541,8 @@ defmodule EthereumJSONRPC.Block do
           bitcoin_merged_mining_header: Map.get(elixir, "bitcoinMergedMiningHeader"),
           bitcoin_merged_mining_coinbase_transaction: Map.get(elixir, "bitcoinMergedMiningCoinbaseTransaction"),
           bitcoin_merged_mining_merkle_proof: Map.get(elixir, "bitcoinMergedMiningMerkleProof"),
-          hash_for_merged_mining: Map.get(elixir, "hashForMergedMining")
+          hash_for_merged_mining: Map.get(elixir, "hashForMergedMining"),
+          total_difficulty: Map.get(elixir, "totalDifficulty", 0)
         })
 
       "ethereum" ->
@@ -616,7 +551,8 @@ defmodule EthereumJSONRPC.Block do
           withdrawals_root:
             Map.get(elixir, "withdrawalsRoot", "0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421"),
           blob_gas_used: Map.get(elixir, "blobGasUsed", 0),
-          excess_blob_gas: Map.get(elixir, "excessBlobGas", 0)
+          excess_blob_gas: Map.get(elixir, "excessBlobGas", 0),
+          total_difficulty: Map.get(elixir, "totalDifficulty", 0)
         })
 
       _ ->
@@ -937,6 +873,10 @@ defmodule EthereumJSONRPC.Block do
     {key, quantity_to_integer(quantity)}
   end
 
+  defp entry_to_elixir({key, quantity}) when key and is_list(quantity) do
+    {key, quantity |> Enum.map(&quantity_to_integer/1)}
+  end
+
   # Size and totalDifficulty may be `nil` for uncle blocks
   defp entry_to_elixir({key, nil}, _block) when key in ~w(size totalDifficulty) do
     {key, nil}
@@ -947,7 +887,8 @@ defmodule EthereumJSONRPC.Block do
   # hash format
   defp entry_to_elixir({key, _} = entry, _block)
        when key in ~w(author extraData hash logsBloom miner mixHash nonce parentHash receiptsRoot sealFields sha3Uncles
-                     signature stateRoot step transactionsRoot uncles withdrawalsRoot bitcoinMergedMiningHeader bitcoinMergedMiningCoinbaseTransaction bitcoinMergedMiningMerkleProof hashForMergedMining),
+                     signature stateRoot step transactionsRoot uncles withdrawalsRoot bitcoinMergedMiningHeader bitcoinMergedMiningCoinbaseTransaction bitcoinMergedMiningMerkleProof hashForMergedMining
+                     manifestHashFull numberFull parentHashFull extRollupRoot extTransactionsRoot subManifest location totalEntropy parentEntropy parentDeltaS parentEntropyFull parentDeltaSFull),
        do: entry
 
   defp entry_to_elixir({"timestamp" = key, timestamp}, _block) do
@@ -956,6 +897,10 @@ defmodule EthereumJSONRPC.Block do
 
   defp entry_to_elixir({"transactions" = key, transactions}, %{"timestamp" => block_timestamp}) do
     {key, Transactions.to_elixir(transactions, timestamp_to_datetime(block_timestamp))}
+  end
+
+  defp entry_to_elixir({"extTransactions" = key, extTransactions}) do
+    {key, Transactions.ext_to_elixir(extTransactions)}
   end
 
   defp entry_to_elixir({"withdrawals" = key, nil}, _block) do
@@ -970,6 +915,14 @@ defmodule EthereumJSONRPC.Block do
   # Arbitrum fields
   defp entry_to_elixir({"l1BlockNumber", _}, _block) do
     {:ignore, :ignore}
+  end
+
+  defp entry_to_elixir({key, quantity}) do
+    if is_list(quantity) do
+      {key, quantity |> Enum.map(&quantity_to_integer/1)}
+    else
+      {key, quantity_to_integer(quantity)}
+    end
   end
 
   # bitcoinMergedMiningCoinbaseTransaction bitcoinMergedMiningHeader bitcoinMergedMiningMerkleProof hashForMergedMining - RSK https://github.com/blockscout/blockscout/pull/2934

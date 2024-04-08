@@ -3,9 +3,8 @@ defmodule Explorer.Repo.Migrations.Quaigrate do
 
   def change do
     alter table(:blocks) do
-      add(:difficulty_full, {:array, :numeric})
       add(:manifest_hash_full, {:array, :bytea})
-      add(:number_full, {:array, :bigint})
+      add(:number_full, {:array, :bytea})
       add(:parent_hash_full, {:array, :bytea})
       add(:ext_rollup_root, :bytea)
       add(:transactions_root, :bytea)
@@ -14,12 +13,11 @@ defmodule Explorer.Repo.Migrations.Quaigrate do
       add(:location, :string)
       add(:is_prime_coincident, :boolean)
       add(:is_region_coincident, :boolean)
-      add(:total_entropy, :numeric)
-      add(:parent_entropy, :numeric)
-      add(:parent_delta_s, :numeric)
-      add(:parent_entropy_full, {:array, :numeric})
-      add(:parent_delta_s_full, {:array, :numeric})
-      remove(:total_difficulty)
+      add(:total_entropy, :bytea)
+      add(:parent_entropy, :bytea)
+      add(:parent_delta_s, :bytea)
+      add(:parent_entropy_full, {:array, :bytea})
+      add(:parent_delta_s_full, {:array, :bytea})
     end
   end
 end

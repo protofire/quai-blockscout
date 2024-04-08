@@ -9,21 +9,21 @@ defmodule Explorer.Chain.Block.Schema do
                         "quai" ->
                           elem(
                             quote do
-                              field(:ext_rollup_root, {:array, Hash.Full})
-                              field(:sub_manifest, {:array, Hash.Full})
                               field(:manifest_hash_full, {:array, Hash.Full})
-                              field(:number_full, {:array, :integer})
+                              field(:number_full, {:array, :binary})
                               field(:parent_hash_full, {:array, Hash.Full})
+                              field(:ext_rollup_root, Hash.Full)
+                              field(:transactions_root, Hash.Full)
+                              field(:ext_transactions_root, Hash.Full)
+                              field(:sub_manifest, {:array, Hash.Full})
                               field(:location, :string)
                               field(:is_prime_coincident, :boolean)
                               field(:is_region_coincident, :boolean)
-
-                              field(:total_entropy, :decimal)
-                              # field(:total_delta_s, :decimal)
-                              field(:parent_entropy, :decimal)
-                              field(:parent_delta_s, :decimal)
-                              field(:parent_entropy_full, {:array, :decimal})
-                              field(:parent_delta_s_full, {:array, :decimal})
+                              field(:total_entropy, :binary)
+                              field(:parent_entropy, :binary)
+                              field(:parent_delta_s, :binary)
+                              field(:parent_entropy_full, {:array, :binary})
+                              field(:parent_delta_s_full, {:array, :binary})
                             end,
                             2
                           )
@@ -78,7 +78,7 @@ defmodule Explorer.Chain.Block.Schema do
         field(:number, :integer, null: false)
         field(:size, :integer)
         field(:timestamp, :utc_datetime_usec, null: false)
-        # field(:total_difficulty, :decimal)
+        field(:total_difficulty, :decimal)
         field(:refetch_needed, :boolean)
         field(:base_fee_per_gas, Wei)
         field(:is_empty, :boolean)
@@ -126,19 +126,19 @@ defmodule Explorer.Chain.Block do
   alias Explorer.Chain.Block.{EmissionReward, Reward}
   alias Explorer.Repo
 
-  @optional_attrs ~w(size refetch_needed total_difficulty difficulty base_fee_per_gas)a
+  @optional_attrs ~w(size refetch_needed difficulty base_fee_per_gas)a
                   |> (&(case Application.compile_env(:explorer, :chain_type) do
                           "quai" ->
                             &1 ++
-                              ~w(difficulty_full ext_rollup_root_full ext_transactions_root_full ext_transactions sub_manifest gas_limit_full gas_used_full logs_bloom_full manifest_hash_full miner_full number_full parent_hash_full receipts_root_full sha3_uncles_full state_root_full transactions_root_full location)a
+                              ~w(manifest_hash_full number_full parent_hash_full ext_rollup_root transactions_root ext_transactions_root sub_manifest location is_prime_coincident is_region_coincident total_entropy parent_entropy parent_delta_s parent_entropy_full parent_delta_s_full)a
 
                           "rsk" ->
                             &1 ++
-                              ~w(minimum_gas_price bitcoin_merged_mining_header bitcoin_merged_mining_coinbase_transaction bitcoin_merged_mining_merkle_proof hash_for_merged_mining)a
+                              ~w(total_difficulty minimum_gas_price bitcoin_merged_mining_header bitcoin_merged_mining_coinbase_transaction bitcoin_merged_mining_merkle_proof hash_for_merged_mining)a
 
                           "ethereum" ->
                             &1 ++
-                              ~w(blob_gas_used excess_blob_gas)a
+                              ~w(total_difficulty blob_gas_used excess_blob_gas)a
 
                           _ ->
                             &1

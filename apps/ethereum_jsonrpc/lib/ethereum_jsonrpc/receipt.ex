@@ -174,6 +174,12 @@ defmodule EthereumJSONRPC.Receipt do
 
   defp chain_type_fields(params, elixir) do
     case Application.get_env(:explorer, :chain_type) do
+      "quai" ->
+        params
+        |> Map.merge(%{
+          exts: Map.get(elixir, "exts", [])
+        })
+
       "ethereum" ->
         params
         |> Map.merge(%{
@@ -367,6 +373,23 @@ defmodule EthereumJSONRPC.Receipt do
   # GoQuorum specific transaction receipt fields
   defp entry_to_elixir({key, _}) when key in ~w(isPrivacyMarkerTransaction) do
     :ignore
+  end
+
+  # New clause to handle "etxs"
+  defp entry_to_elixir({"etxs" = key, etxs_list}) when is_list(etxs_list) do
+    transformed_etxs = Enum.map(etxs_list, &transform_etxs/1)
+    {:ok, {key, transformed_etxs}}
+  end
+
+  # Helper function to transform etxs
+  defp transform_etxs(etxs_map) when is_map(etxs_map) do
+    etxs_map
+    |> Enum.map(fn {key, value} -> {key, transform_etxs_field(value)} end)
+    |> Enum.into(%{})
+  end
+
+  defp transform_etxs_field(value) do
+    value
   end
 
   # Optimism specific transaction receipt fields

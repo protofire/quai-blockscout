@@ -10,23 +10,16 @@ defmodule EthereumJSONRPC.Block.ByNumber do
   @spec request(map(), boolean(), boolean()) :: Transport.request()
   def request(%{id: id, number: number}, hydrated \\ true, int_to_qty \\ true) do
     block_number =
-      if int_to_qty do
-        integer_to_quantity(number)
+      if is_list(number) do
+        integer_to_quantity(Enum.at(number, String.to_integer(System.get_env("CHAIN_INDEX"))))
       else
-        number
+        if int_to_qty do
+          integer_to_quantity(number)
+        else
+          number
+        end
       end
 
-    # Not sure that this is correct
-    if is_list(block_number) do
-      EthereumJSONRPC.request(%{
-        id: id,
-        method: "quai_getBlockByNumber",
-        params: [integer_to_quantity(Enum.at(block_number, String.to_integer(System.get_env("CHAIN_INDEX")))), hydrated]
-      })
-    else
-      EthereumJSONRPC.request(%{id: id, method: "quai_getBlockByNumber", params: [block_number, hydrated]})
-    end
-
-    # EthereumJSONRPC.request(%{id: id, method: "eth_getBlockByNumber", params: [block_number, hydrated]})
+    EthereumJSONRPC.request(%{id: id, method: "quai_getBlockByNumber", params: [block_number, hydrated]})
   end
 end

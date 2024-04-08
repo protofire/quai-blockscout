@@ -83,8 +83,6 @@ defmodule Indexer.Fetcher.EmptyBlocksSanitizer do
 
     unprocessed_empty_blocks_from_db = unprocessed_empty_blocks_query_list(limit())
 
-    unprocessed_empty_blocks_from_db |> IO.inspect()
-
     unprocessed_empty_blocks_from_db
     |> Enum.with_index()
     |> Enum.each(fn {{block_number, block_hash}, ind} ->
