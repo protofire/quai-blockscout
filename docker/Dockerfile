@@ -7,7 +7,7 @@ ENV MIX_ENV="prod"
 RUN apk --no-cache --update add alpine-sdk gmp-dev automake libtool inotify-tools autoconf python3 file gcompat
 
 RUN set -ex && \
-    apk --update add libstdc++ curl ca-certificates gcompat
+  apk --update add libstdc++ curl ca-certificates gcompat
 
 ARG CACHE_EXCHANGE_RATES_PERIOD
 ARG API_V1_READ_METHODS_DISABLED
@@ -23,6 +23,8 @@ ARG AMPLITUDE_API_KEY
 ARG AMPLITUDE_URL
 ARG CHAIN_TYPE
 ENV CHAIN_TYPE=${CHAIN_TYPE}
+ARG CHAIN_INDEX
+ENV CHAIN_INDEX=${CHAIN_INDEX}
 ARG BRIDGED_TOKENS_ENABLED
 ENV BRIDGED_TOKENS_ENABLED=${BRIDGED_TOKENS_ENABLED}
 
@@ -49,12 +51,12 @@ RUN mix compile && npm install npm@latest
 
 # Add blockscout npm deps
 RUN cd apps/block_scout_web/assets/ && \
-    npm install && \
-    npm run deploy && \
-    cd /app/apps/explorer/ && \
-    npm install && \
-    apk update && \
-    apk del --force-broken-world alpine-sdk gmp-dev automake libtool inotify-tools autoconf python3
+  npm install && \
+  npm run deploy && \
+  cd /app/apps/explorer/ && \
+  npm install && \
+  apk update && \
+  apk del --force-broken-world alpine-sdk gmp-dev automake libtool inotify-tools autoconf python3
 
 
 RUN apk add --update git make 
@@ -72,6 +74,8 @@ ARG RELEASE_VERSION
 ENV RELEASE_VERSION=${RELEASE_VERSION}
 ARG CHAIN_TYPE
 ENV CHAIN_TYPE=${CHAIN_TYPE}
+ARG CHAIN_INDEX
+ENV CHAIN_INDEX=${CHAIN_INDEX}
 ARG BRIDGED_TOKENS_ENABLED
 ENV BRIDGED_TOKENS_ENABLED=${BRIDGED_TOKENS_ENABLED}
 ARG BLOCKSCOUT_VERSION
