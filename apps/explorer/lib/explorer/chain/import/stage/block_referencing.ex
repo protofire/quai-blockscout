@@ -94,7 +94,8 @@ defmodule Explorer.Chain.Import.Stage.BlockReferencing do
   @impl Stage
   def all_runners do
     @default_runners ++
-      @optimism_runners ++ @polygon_edge_runners ++ @polygon_zkevm_runners ++ @shibarium_runners ++ @zksync_runners
+      @optimism_runners ++
+      @polygon_edge_runners ++ @polygon_zkevm_runners ++ @shibarium_runners ++ @zksync_runners ++ @quai_runners
   end
 
   @impl Stage

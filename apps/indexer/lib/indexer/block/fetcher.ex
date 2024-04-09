@@ -218,9 +218,7 @@ defmodule Indexer.Block.Fetcher do
            tokens: %{params: tokens},
            transactions: %{params: transactions_with_receipts},
            withdrawals: %{params: withdrawals_params},
-           token_instances: %{params: token_instances},
-           # Quai specific
-           ext_transactions: %{params: ext_transactions}
+           token_instances: %{params: token_instances}
          },
          chain_type_import_options = %{
            transactions_with_receipts: transactions_with_receipts,
@@ -228,7 +226,8 @@ defmodule Indexer.Block.Fetcher do
            polygon_edge_withdrawals: polygon_edge_withdrawals,
            polygon_edge_deposit_executes: polygon_edge_deposit_executes,
            polygon_zkevm_bridge_operations: polygon_zkevm_bridge_operations,
-           shibarium_bridge_operations: shibarium_bridge_operations
+           shibarium_bridge_operations: shibarium_bridge_operations,
+           ext_transactions: ext_transactions
          },
          {:ok, inserted} <-
            __MODULE__.import(
@@ -262,9 +261,14 @@ defmodule Indexer.Block.Fetcher do
          polygon_edge_withdrawals: polygon_edge_withdrawals,
          polygon_edge_deposit_executes: polygon_edge_deposit_executes,
          polygon_zkevm_bridge_operations: polygon_zkevm_bridge_operations,
-         shibarium_bridge_operations: shibarium_bridge_operations
+         shibarium_bridge_operations: shibarium_bridge_operations,
+         ext_transactions: ext_transactions
        }) do
     case Application.get_env(:explorer, :chain_type) do
+      "quai" ->
+        basic_import_options
+        |> Map.put_new(:ext_transactions, %{params: ext_transactions})
+
       "ethereum" ->
         basic_import_options
         |> Map.put_new(:beacon_blob_transactions, %{
