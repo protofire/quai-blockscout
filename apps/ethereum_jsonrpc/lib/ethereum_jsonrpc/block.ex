@@ -899,7 +899,7 @@ defmodule EthereumJSONRPC.Block do
     {key, Transactions.to_elixir(transactions, timestamp_to_datetime(block_timestamp))}
   end
 
-  defp entry_to_elixir({"extTransactions" = key, extTransactions}) do
+  defp entry_to_elixir({"extTransactions" = key, extTransactions}, _block) do
     {key, Transactions.ext_to_elixir(extTransactions)}
   end
 
