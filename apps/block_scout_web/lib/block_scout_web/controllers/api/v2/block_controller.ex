@@ -15,10 +15,14 @@ defmodule BlockScoutWeb.API.V2.BlockController do
 
   import Explorer.MicroserviceInterfaces.BENS, only: [maybe_preload_ens: 1]
 
-  alias BlockScoutWeb.API.V2.{TransactionView, WithdrawalView}
+  alias BlockScoutWeb.API.V2.{TransactionView, WithdrawalView, ExternalTransactionView}
   alias Explorer.Chain
 
   case Application.compile_env(:explorer, :chain_type) do
+    "quai" ->
+      @chain_type_transaction_necessity_by_association %{}
+      @chain_type_block_necessity_by_association %{}
+
     "ethereum" ->
       @chain_type_transaction_necessity_by_association %{
         :beacon_blob_transaction => :optional
@@ -41,6 +45,16 @@ defmodule BlockScoutWeb.API.V2.BlockController do
       @chain_type_block_necessity_by_association %{}
   end
 
+  @external_transaction_necessity_by_association [
+    necessity_by_association:
+      %{
+        [from_address: :names] => :optional,
+        [to_address: :names] => :optional,
+        :block => :optional,
+      }
+      |> Map.merge(@chain_type_transaction_necessity_by_association)
+  ]
+
   @transaction_necessity_by_association [
     necessity_by_association:
       %{
@@ -56,20 +70,6 @@ defmodule BlockScoutWeb.API.V2.BlockController do
   ]
 
   @api_true [api?: true]
-
-  @block_params [
-    necessity_by_association:
-      %{
-        [miner: :names] => :optional,
-        :uncles => :optional,
-        :nephews => :optional,
-        :rewards => :optional,
-        :transactions => :optional,
-        :withdrawals => :optional
-      }
-      |> Map.merge(@chain_type_block_necessity_by_association),
-    api?: true
-  ]
 
   @block_params [
     necessity_by_association:
@@ -149,6 +149,30 @@ defmodule BlockScoutWeb.API.V2.BlockController do
       |> put_status(200)
       |> put_view(TransactionView)
       |> render(:transactions, %{transactions: transactions |> maybe_preload_ens(), next_page_params: next_page_params})
+    end
+  end
+
+  def ext_transactions(conn, %{"block_hash_or_number" => block_hash_or_number} = params) do
+    with {:ok, type, value} <- parse_block_hash_or_number_param(block_hash_or_number),
+         {:ok, block} <- fetch_block(type, value, @api_true) do
+      full_options =
+        @external_transaction_necessity_by_association
+        |> Keyword.merge(put_key_value_to_paging_options(paging_options(params), :is_index_in_asc_order, true))
+        |> Keyword.merge(type_filter_options(params))
+        |> Keyword.merge(@api_true)
+
+      transactions_plus_one = Chain.block_to_external_transactions(block.hash, full_options)
+
+      {transactions, next_page} = split_list_by_page(transactions_plus_one)
+
+      next_page_params =
+        next_page
+        |> next_page_params(transactions, delete_parameters_from_next_page_params(params))
+
+      conn
+      |> put_status(200)
+      |> put_view(ExternalTransactionView)
+      |> render(:external_transactions, %{transactions: transactions |> maybe_preload_ens(), next_page_params: next_page_params})
     end
   end
 

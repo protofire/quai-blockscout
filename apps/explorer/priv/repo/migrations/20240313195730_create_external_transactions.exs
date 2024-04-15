@@ -36,18 +36,14 @@ defmodule Explorer.Repo.Migrations.CreateExternalTransactions do
 
       # `null` when a pending transaction
       add(:block_hash, references(:blocks, column: :hash, on_delete: :delete_all, type: :bytea), null: true)
-#      add(:block_hash, :bytea, null: true)
 
       # `null` when a pending transaction
       # denormalized from `blocks.number` to improve `Explorer.Chain.recent_collated_transactions/0` performance
       add(:block_number, :integer, null: true)
 
-#      add(:from_address_hash, references(:addresses, column: :hash, on_delete: :delete_all, type: :bytea), null: false)
       add(:from_address_hash, :bytea, null: false)
       # `null` when it is a contract creation transaction
-#      add(:to_address_hash, references(:addresses, column: :hash, on_delete: :delete_all, type: :bytea), null: true)
       add(:to_address_hash, :bytea, null: true)
-#      add(:created_contract_address_hash, references(:addresses, column: :hash, type: :bytea), null: true)
       add(:created_contract_address_hash, :bytea, null: true)
       add(:max_priority_fee_per_gas, :numeric, precision: 100, null: true)
       add(:max_fee_per_gas, :numeric, precision: 100, null: true)
@@ -59,76 +55,9 @@ defmodule Explorer.Repo.Migrations.CreateExternalTransactions do
     end
 
     create(index(:external_transactions, [:created_contract_code_indexed_at]))
-
-#    create(
-#      constraint(
-#        :external_transactions,
-#        :collated_block_number,
-#        check: "block_hash IS NULL OR block_number IS NOT NULL"
-#      )
-#    )
-#
-#    create(
-#      constraint(
-#        :external_transactions,
-#        :collated_cumalative_gas_used,
-#        check: "block_hash IS NULL OR cumulative_gas_used IS NOT NULL"
-#      )
-#    )
-#
-#    create(
-#      constraint(
-#        :external_transactions,
-#        :collated_gas_used,
-#        check: "block_hash IS NULL OR gas_used IS NOT NULL"
-#      )
-#    )
-#
-#    create(
-#      constraint(
-#        :external_transactions,
-#        :collated_index,
-#        check: "block_hash IS NULL OR index IS NOT NULL"
-#      )
-#    )
-#
-#    create(
-#      constraint(
-#        :external_transactions,
-#        :pending_block_number,
-#        check: "block_hash IS NOT NULL OR block_number IS NULL"
-#      )
-#    )
-#
-#    create(
-#      constraint(
-#        :external_transactions,
-#        :pending_cumalative_gas_used,
-#        check: "block_hash IS NOT NULL OR cumulative_gas_used IS NULL"
-#      )
-#    )
-#
-#    create(
-#      constraint(
-#        :external_transactions,
-#        :pending_gas_used,
-#        check: "block_hash IS NOT NULL OR gas_used IS NULL"
-#      )
-#    )
-#
-#    create(
-#      constraint(
-#        :external_transactions,
-#        :pending_index,
-#        check: "block_hash IS NOT NULL OR index IS NULL"
-#      )
-#    )
-
     create(index(:external_transactions, :block_hash))
-
     create(index(:external_transactions, :inserted_at))
     create(index(:external_transactions, :updated_at))
-
     create(index(:external_transactions, :status))
 
     create(

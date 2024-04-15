@@ -3048,7 +3048,7 @@ defmodule Explorer.Chain do
   end
 
   @doc """
-  Converts `transaction` to the status of the `t:Explorer.Chain.ExternalTransaction.t/0` whether pending or collated.
+  Converts `external_transaction` to the status of the `t:Explorer.Chain.ExternalTransaction.t/0` whether pending or collated.
 
   ## Returns
 
@@ -3403,8 +3403,7 @@ defmodule Explorer.Chain do
   defp fetch_external_transactions_in_ascending_order_by_index(paging_options) do
     ExternalTransaction
     |> order_by([transaction], desc: transaction.block_number, asc: transaction.index)
-
-    # |> handle_paging_options(paging_options)
+    |> handle_block_paging_options(paging_options)
   end
 
   defp fetch_transactions_in_descending_order_by_block_and_index(paging_options) do
@@ -3740,6 +3739,7 @@ defmodule Explorer.Chain do
           initial :: accumulator,
           reducer :: (entry :: map(), accumulator -> accumulator)
         ) :: {:ok, accumulator}
+
         when accumulator: term()
   def stream_token_instances_with_unfetched_metadata(initial, reducer) when is_function(reducer, 2) do
     Instance

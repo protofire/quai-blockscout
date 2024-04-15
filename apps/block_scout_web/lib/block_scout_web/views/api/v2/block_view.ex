@@ -58,7 +58,20 @@ defmodule BlockScoutWeb.API.V2.BlockView do
       "burnt_fees_percentage" => burnt_fees_percentage(burnt_fees, transaction_fees),
       "type" => block |> BlockView.block_type() |> String.downcase(),
       "tx_fees" => transaction_fees,
-      "withdrawals_count" => count_withdrawals(block)
+      "withdrawals_count" => count_withdrawals(block),
+      "transactions_root" => block.transactions_root,
+      "ext_transactions_root" => block.ext_transactions_root,
+      "manifest_hash_full" => block.manifest_hash_full,
+      "number_full" => block.number_full,
+      "parent_hash_full" => block.parent_hash_full,
+      "ext_rollup_root" => block.ext_rollup_root,
+      "sub_manifest" => block.sub_manifest,
+      "location" => block.location,
+      "total_entropy" => block.total_entropy,
+      "parent_entropy" => block.parent_entropy,
+      "parent_delta_s" => block.parent_delta_s,
+      "parent_entropy_full" => block.parent_entropy_full,
+      "parent_delta_s_full" => block.parent_delta_s_full,
     }
     |> chain_type_fields(block, single_block?)
   end

@@ -24,6 +24,7 @@ defmodule Explorer.Chain.Block.Schema do
                               field(:parent_delta_s, :binary)
                               field(:parent_entropy_full, {:array, :binary})
                               field(:parent_delta_s_full, {:array, :binary})
+                              has_many(:ext_transactions, ExternalTransaction, references: :hash)
                             end,
                             2
                           )
@@ -96,7 +97,6 @@ defmodule Explorer.Chain.Block.Schema do
         has_many(:uncles, through: [:uncle_relations, :uncle], references: :hash)
 
         has_many(:transactions, Transaction, references: :hash)
-        has_many(:ext_transactions, ExternalTransaction, references: :hash)
         has_many(:transaction_forks, Transaction.Fork, foreign_key: :uncle_hash, references: :hash)
 
         has_many(:rewards, Reward, foreign_key: :block_hash, references: :hash)

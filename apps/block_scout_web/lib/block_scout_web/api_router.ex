@@ -234,6 +234,10 @@ defmodule BlockScoutWeb.ApiRouter do
       get("/:block_hash_or_number", V2.BlockController, :block)
       get("/:block_hash_or_number/transactions", V2.BlockController, :transactions)
       get("/:block_hash_or_number/withdrawals", V2.BlockController, :withdrawals)
+
+      if Application.compile_env(:explorer, :chain_type) == "quai" do
+        get("/:block_hash_or_number/external-transactions", V2.BlockController, :ext_transactions)
+      end
     end
 
     scope "/addresses" do

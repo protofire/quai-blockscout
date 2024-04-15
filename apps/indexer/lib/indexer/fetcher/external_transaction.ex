@@ -70,16 +70,7 @@ defmodule Indexer.Fetcher.ExternalTransaction do
 
   @impl BufferedTask
   def init(initial, reducer, _json_rpc_named_arguments) do
-    {:ok, final} =
-      Chain.stream_blocks_with_unfetched_external_transactions(initial, fn block_number, acc ->
-        reducer.(block_number, acc)
-      end)
-
-    final
-  end
-
-  defp params(%{block_number: block_number, hash: hash, index: index}) when is_integer(block_number) do
-    %{block_number: block_number, hash_data: to_string(hash), transaction_index: index}
+    {:ok, initial, reducer}
   end
 
   @impl BufferedTask
@@ -89,38 +80,17 @@ defmodule Indexer.Fetcher.ExternalTransaction do
               service: :indexer,
               tracer: Tracer
             )
-  def run(block_numbers, json_rpc_named_arguments) do
+  def run(block_numbers, _json_rpc_named_arguments) do
     unique_numbers = Enum.uniq(block_numbers)
-    filtered_unique_numbers = EthereumJSONRPC.block_numbers_in_range(unique_numbers)
 
-    filtered_unique_numbers_count = Enum.count(filtered_unique_numbers)
+    filtered_unique_numbers_count = Enum.count(unique_numbers)
     Logger.metadata(count: filtered_unique_numbers_count)
 
     Logger.debug("fetching external transactions for blocks")
 
-    json_rpc_named_arguments
-    |> Keyword.fetch!(:variant)
-    |> case do
-      EthereumJSONRPC.Nethermind ->
-        EthereumJSONRPC.fetch_block_external_transactions(filtered_unique_numbers, json_rpc_named_arguments)
-
-      EthereumJSONRPC.Erigon ->
-        EthereumJSONRPC.fetch_block_external_transactions(filtered_unique_numbers, json_rpc_named_arguments)
-
-      EthereumJSONRPC.Besu ->
-        EthereumJSONRPC.fetch_block_external_transactions(filtered_unique_numbers, json_rpc_named_arguments)
-
-      _ ->
-        try do
-          fetch_block_external_transactions_by_transactions(filtered_unique_numbers, json_rpc_named_arguments)
-        rescue
-          error ->
-            {:error, error}
-        end
-    end
     |> case do
       {:ok, external_transactions_params} ->
-        safe_import_external_transaction(external_transactions_params, filtered_unique_numbers)
+        safe_import_external_transaction(external_transactions_params, unique_numbers)
 
       {:error, reason} ->
         Logger.error(fn -> ["failed to fetch external transactions for blocks: ", inspect(reason)] end,
@@ -128,7 +98,7 @@ defmodule Indexer.Fetcher.ExternalTransaction do
         )
 
         # re-queue the de-duped entries
-        {:retry, filtered_unique_numbers}
+        {:retry, unique_numbers}
 
       :ignore ->
         :ok
@@ -154,34 +124,6 @@ defmodule Indexer.Fetcher.ExternalTransaction do
           step: step
         )
     end
-  end
-
-  defp fetch_block_external_transactions_by_transactions(unique_numbers, json_rpc_named_arguments) do
-    Enum.reduce(unique_numbers, {:ok, []}, fn
-      block_number, {:ok, acc_list} ->
-        block_number
-        |> Chain.get_transactions_of_block_number()
-        |> Enum.map(&params(&1))
-        |> case do
-          [] ->
-            {:ok, []}
-
-          transactions ->
-            try do
-              EthereumJSONRPC.fetch_external_transactions(transactions, json_rpc_named_arguments)
-            catch
-              :exit, error ->
-                {:error, error}
-            end
-        end
-        |> case do
-          {:ok, external_transactions} -> {:ok, external_transactions ++ acc_list}
-          error_or_ignore -> error_or_ignore
-        end
-
-      _, error_or_ignore ->
-        error_or_ignore
-    end)
   end
 
   defp safe_import_external_transaction(external_transactions_params, block_numbers) do
