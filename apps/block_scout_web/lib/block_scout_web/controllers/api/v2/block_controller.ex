@@ -21,7 +21,9 @@ defmodule BlockScoutWeb.API.V2.BlockController do
   case Application.compile_env(:explorer, :chain_type) do
     "quai" ->
       @chain_type_transaction_necessity_by_association %{}
-      @chain_type_block_necessity_by_association %{}
+      @chain_type_block_necessity_by_association %{
+        :ext_transactions => :optional,
+      }
 
     "ethereum" ->
       @chain_type_transaction_necessity_by_association %{
