@@ -729,12 +729,15 @@ defmodule BlockScoutWeb.API.V2.TransactionView do
     end
   end
 
-  def tx_types(tx, types, :internal_to_external_transaction) do
-    if type == 2 do
-      [:internal_to_external_transaction | types]
-    else
-      types
-    end
+  def tx_types(%Transaction{type: type} = tx, types, :internal_to_external_transaction) do
+    types =
+      if type == 2 do
+        [:internal_to_external_transaction | types]
+      else
+        types
+      end
+
+    tx_types(tx, types, :token_transfer)
   end
 
   defp block_timestamp(%Transaction{block_timestamp: block_ts}) when not is_nil(block_ts), do: block_ts
