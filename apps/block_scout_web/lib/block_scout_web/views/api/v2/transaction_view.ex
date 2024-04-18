@@ -635,6 +635,7 @@ defmodule BlockScoutWeb.API.V2.TransactionView do
                | :token_creation
                | :token_transfer
                | :blob_transaction
+               | :internal_to_external_transaction
   def tx_types(tx, types \\ [], stage \\ :blob_transaction)
 
   def tx_types(%Transaction{type: type} = tx, types, :blob_transaction) do
@@ -723,6 +724,14 @@ defmodule BlockScoutWeb.API.V2.TransactionView do
   def tx_types(tx, types, :rootstock_bridge) do
     if Transaction.rootstock_bridge_transaction?(tx) do
       [:rootstock_bridge | types]
+    else
+      types
+    end
+  end
+
+  def tx_types(tx, types, :internal_to_external_transaction) do
+    if type == 2 do
+      [:internal_to_external_transaction | types]
     else
       types
     end
