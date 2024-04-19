@@ -22,8 +22,9 @@ defmodule BlockScoutWeb.API.V2.ExternalTransactionView do
     %{
       "hash" => transaction.hash,
       "block_number" => transaction.block_number,
-      "from_address" => Helper.address_with_info(nil, transaction.from_address, transaction.from_address_hash, false),
-      "to_address" => Helper.address_with_info(nil, transaction.to_address, transaction.to_address_hash, false),
+      "from" => Helper.address_with_info(nil, transaction.from_address, transaction.from_address_hash, false),
+      "to" => Helper.address_with_info(nil, transaction.to_address, transaction.to_address_hash, false),
+      "fee" => transaction |> Explorer.Chain.fee(:wei) |> format_fee(),
       "value" => transaction.value,
       "gas_price" => transaction.gas_price,
       "gas_used" => transaction.gas_used,
@@ -45,4 +46,6 @@ defmodule BlockScoutWeb.API.V2.ExternalTransactionView do
       "type" => transaction.type
     }
   end
+
+  def format_fee({type, value}), do: %{"type" => type, "value" => value}
 end
