@@ -677,6 +677,14 @@ defmodule EthereumJSONRPC.Transaction do
   defp entry_to_elixir({"data", value}),
     do: {"input", value}
 
+  # specific to QUAI client
+  defp entry_to_elixir({"from", _value} = tuple, %{"type" => "0x1", "sender" => sender}) do
+    {"from", sender}
+  end
+  defp entry_to_elixir(tuple, _transaction) do
+    entry_to_elixir(tuple)
+  end
+
   defp entry_to_elixir({key, quantity})
        when key in ~w(gas gasPrice nonce r s standardV v value type maxPriorityFeePerGas maxFeePerGas maxFeePerBlobGas) and
               quantity != nil do
