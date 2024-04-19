@@ -643,7 +643,7 @@ defmodule EthereumJSONRPC.Transaction do
 
   def to_elixir(transaction, block_timestamp) when is_map(transaction) do
     initial = (block_timestamp && %{"block_timestamp" => block_timestamp}) || %{}
-    Enum.into(transaction, initial, &entry_to_elixir/1)
+    Enum.into(transaction, initial, fn {key, value} -> entry_to_elixir({key, value}, transaction) end)
   end
 
   def to_elixir(transaction, _block_timestamp) when is_binary(transaction) do
