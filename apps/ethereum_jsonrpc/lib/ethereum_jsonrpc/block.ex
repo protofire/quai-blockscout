@@ -347,13 +347,24 @@ defmodule EthereumJSONRPC.Block do
              "receiptsRoot" => receipts_root,
              "size" => size,
              "transactionsRoot" => transactions_root,
-             "evmRoot" => state_root
+             "evmRoot" => evm_root,
+             "utxoRoot" => utxo_root,
+             "etxSetHash" => etx_set_hash,
+             "parentUncledSubDeltaS" => parent_uncled_sub_delta_s,
+             "efficiencyScore" => efficiency_score,
+             "thresholdCount" => threshold_count,
+             "expansionNumber" => expansion_number,
+             "etxEligibleSlices" => etx_eligible_slices,
+             "primeTerminus" => prime_terminus,
+             "interlinkRootHash" => interlink_root_hash,
+             "uncledS" => uncled_s
            },
            "parentHash" => parent_hash,
            "number" => number,
            "difficulty" => difficulty,
            "transactions" => transactions,
            "uncles" => uncles,
+           "interlinkHashes" => interlink_hashes,
            "time" => timestamp
          } = elixir
        ) do
@@ -372,11 +383,22 @@ defmodule EthereumJSONRPC.Block do
       receipts_root: receipts_root,
       sha3_uncles: sha3_uncles,
       size: quantity_to_integer(size),
-      state_root: state_root,
       timestamp: timestamp,
       transactions: transactions,
       transactions_root: transactions_root,
-      uncles: uncles
+      evm_root: evm_root,
+      utxo_root: utxo_root,
+      etx_set_hash: etx_set_hash,
+      parent_uncled_sub_delta_s: parent_uncled_sub_delta_s,
+      efficiency_score: efficiency_score,
+      threshold_count: threshold_count,
+      expansion_number: expansion_number,
+      etx_eligible_slices: etx_eligible_slices,
+      prime_terminus: prime_terminus,
+      interlink_root_hash: interlink_root_hash,
+      uncled_s: uncled_s,
+      uncles: uncles,
+      interlink_hashes: interlink_hashes
     }
   end
 
@@ -911,10 +933,6 @@ defmodule EthereumJSONRPC.Block do
     {
       key,
       transactions
-      |> Enum.map(fn tx -> Map.put(tx, "blockHash", block["header"]["hash"]) end)
-      |> Enum.map(fn tx -> Map.put(tx, "blockNumber", block["number"]) end)
-      |> Enum.map(fn tx -> Map.put(tx, "transactionIndex", nil) end)
-      |> Enum.map(fn tx -> Map.put(tx, "from", nil) end)
       |> Transactions.to_elixir(timestamp_to_datetime(block_timestamp))
     }
   end
