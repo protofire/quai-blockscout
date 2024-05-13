@@ -334,42 +334,44 @@ defmodule EthereumJSONRPC.Block do
 
   defp do_elixir_to_params(
          %{
-           "baseFeePerGas" => base_fee_per_gas,
-           "difficulty" => difficulty,
-           "extraData" => extra_data,
-           "gasLimit" => gas_limit,
-           "gasUsed" => gas_used,
-           "hash" => hash,
-           "miner" => miner_hash,
-           "mixHash" => mix_hash,
-           "nonce" => nonce,
-           "number" => number,
+           "header" => %{
+             "baseFeePerGas" => base_fee_per_gas,
+             "extraData" => extra_data,
+             "gasLimit" => gas_limit,
+             "gasUsed" => gas_used,
+             "hash" => hash,
+             "mixHash" => mix_hash,
+             "nonce" => nonce,
+             "miner" => miner_hash,
+             "sha3Uncles" => sha3_uncles,
+             "receiptsRoot" => receipts_root,
+             "size" => size,
+             "transactionsRoot" => transactions_root,
+             "evmRoot" => state_root
+           },
            "parentHash" => parent_hash,
-           "receiptsRoot" => receipts_root,
-           "sha3Uncles" => sha3_uncles,
-           "size" => size,
-           "stateRoot" => state_root,
-           "timestamp" => timestamp,
+           "number" => number,
+           "difficulty" => difficulty,
            "transactions" => transactions,
-           "transactionsRoot" => transactions_root,
-           "uncles" => uncles
+           "uncles" => uncles,
+           "time" => timestamp
          } = elixir
        ) do
     %{
       base_fee_per_gas: base_fee_per_gas,
       difficulty: difficulty,
       extra_data: extra_data,
-      gas_limit: gas_limit,
-      gas_used: gas_used,
+      gas_limit: quantity_to_integer(gas_limit),
+      gas_used: quantity_to_integer(gas_used),
       hash: hash,
       miner_hash: miner_hash,
       mix_hash: mix_hash,
       nonce: nonce,
-      number: number,
+      number: quantity_to_integer(number),
       parent_hash: parent_hash,
       receipts_root: receipts_root,
       sha3_uncles: sha3_uncles,
-      size: size,
+      size: quantity_to_integer(size),
       state_root: state_root,
       timestamp: timestamp,
       transactions: transactions,
@@ -695,7 +697,7 @@ defmodule EthereumJSONRPC.Block do
 
   """
   @spec elixir_to_uncles(elixir) :: Uncles.elixir()
-  def elixir_to_uncles(%{"hash" => nephew_hash, "uncles" => uncles}) do
+  def elixir_to_uncles(%{"header" => %{"hash" => nephew_hash}, "uncles" => uncles}) do
     uncles
     |> Enum.with_index()
     |> Enum.map(fn {uncle_hash, index} -> %{"hash" => uncle_hash, "nephewHash" => nephew_hash, "index" => index} end)
@@ -863,12 +865,22 @@ defmodule EthereumJSONRPC.Block do
       }
 
   """
+
+  def to_elixir(%{"woBody" => body, "woHeader" => header} = block) do
+    block
+    |> Map.merge(body)
+    |> Map.merge(header)
+    |> Map.delete("woBody")
+    |> Map.delete("woHeader")
+    |> to_elixir
+  end
+
   def to_elixir(block) when is_map(block) do
     Enum.into(block, %{}, &entry_to_elixir(&1, block))
   end
 
   defp entry_to_elixir({key, quantity}, _block)
-       when key in ~w(difficulty gasLimit gasUsed minimumGasPrice baseFeePerGas number size cumulativeDifficulty totalDifficulty paidFees minimumGasPrice blobGasUsed excessBlobGas) and
+       when key in ~w(difficulty gasLimit gasUsed baseFeePerGas number size cumulativeDifficulty totalDifficulty paidFees minimumGasPrice blobGasUsed excessBlobGas) and
               not is_nil(quantity) do
     {key, quantity_to_integer(quantity)}
   end
@@ -888,15 +900,23 @@ defmodule EthereumJSONRPC.Block do
   defp entry_to_elixir({key, _} = entry, _block)
        when key in ~w(author extraData hash logsBloom miner mixHash nonce parentHash receiptsRoot sealFields sha3Uncles
                      signature stateRoot step transactionsRoot uncles withdrawalsRoot bitcoinMergedMiningHeader bitcoinMergedMiningCoinbaseTransaction bitcoinMergedMiningMerkleProof hashForMergedMining
-                     manifestHashFull numberFull parentHashFull extRollupRoot extTransactionsRoot subManifest location totalEntropy parentEntropy parentDeltaS parentEntropyFull parentDeltaSFull),
+                     manifestHashFull numberFull parentHashFull extRollupRoot extTransactionsRoot subManifest location totalEntropy parentEntropy parentDeltaS parentEntropyFull parentDeltaSFull order txHash interlinkHashes header headerHash manifest),
        do: entry
 
-  defp entry_to_elixir({"timestamp" = key, timestamp}, _block) do
+  defp entry_to_elixir({"time" = key, timestamp}, _block) do
     {key, timestamp_to_datetime(timestamp)}
   end
 
-  defp entry_to_elixir({"transactions" = key, transactions}, %{"timestamp" => block_timestamp}) do
-    {key, Transactions.to_elixir(transactions, timestamp_to_datetime(block_timestamp))}
+  defp entry_to_elixir({"transactions" = key, transactions}, %{"time" => block_timestamp} = block) do
+    {
+      key,
+      transactions
+      |> Enum.map(fn tx -> Map.put(tx, "blockHash", block["header"]["hash"]) end)
+      |> Enum.map(fn tx -> Map.put(tx, "blockNumber", block["number"]) end)
+      |> Enum.map(fn tx -> Map.put(tx, "transactionIndex", nil) end)
+      |> Enum.map(fn tx -> Map.put(tx, "from", nil) end)
+      |> Transactions.to_elixir(timestamp_to_datetime(block_timestamp))
+    }
   end
 
   defp entry_to_elixir({"extTransactions" = key, extTransactions}, _block) do

@@ -153,6 +153,7 @@ defmodule EthereumJSONRPC.Transactions do
   """
   def to_elixir(transactions, block_timestamp \\ nil) when is_list(transactions) do
     transactions
+    |> Enum.filter(fn tx -> tx["type"] != "0x2" end)
     |> Enum.map(&Transaction.to_elixir(&1, block_timestamp))
     |> Enum.filter(&(!is_nil(&1)))
   end
