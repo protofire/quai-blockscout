@@ -541,7 +541,22 @@ defmodule EthereumJSONRPC.Block do
           parent_hash_full: Map.get(elixir, "parentHashFull", []),
           sub_manifest: Map.get(elixir, "subManifest", []),
           total_entropy: Map.get(elixir, "totalEntropy"),
-          total_difficulty: Map.get(elixir, "totalDifficulty", 0)
+          total_difficulty: Map.get(elixir, "totalDifficulty", 0),
+          # Golden Age
+          evm_root: Map.get(elixir, "evmRoot"),
+          utxo_root: Map.get(elixir, "utxoRoot"),
+          etx_set_hash: Map.get(elixir, "etxSetHash"),
+          parent_uncled_sub_delta_s: Map.get(elixir, "parentUncledSubDeltaS"),
+          efficiency_score: Map.get(elixir, "efficiencyScore", 0),
+          threshold_count: Map.get(elixir, "thresholdCount", 0),
+          expansion_number: Map.get(elixir, "expansionNumber", 0),
+          etx_eligible_slices: Map.get(elixir, "etxEligibleSlices", []),
+          prime_terminus: Map.get(elixir, "primeTerminus", 0),
+          interlink_root_hash: Map.get(elixir, "interlinkRootHash", []),
+          uncled_s: Map.get(elixir, "uncledLogS", []),
+          interlink_hashes: Map.get(elixir, "interlinkHashes", []),
+          wo_body: Map.get(elixir, "woBody", %{}),
+          wo_header: Map.get(elixir, "woHeader", %{})
         })
 
       "rsk" ->
@@ -878,7 +893,7 @@ defmodule EthereumJSONRPC.Block do
   end
 
   defp entry_to_elixir({key, quantity}, _block)
-       when key in ~w(difficulty gasLimit gasUsed minimumGasPrice baseFeePerGas number size cumulativeDifficulty totalDifficulty paidFees minimumGasPrice blobGasUsed excessBlobGas) and
+       when key in ~w(difficulty gasLimit gasUsed minimumGasPrice baseFeePerGas number size cumulativeDifficulty totalDifficulty paidFees minimumGasPrice blobGasUsed excessBlobGas efficiencyScore thresholdCount expansionNumber uncledS) and
               not is_nil(quantity) do
     {key, quantity_to_integer(quantity)}
   end
@@ -896,7 +911,7 @@ defmodule EthereumJSONRPC.Block do
   # `t:EthereumJSONRPC.address/0` and `t:EthereumJSONRPC.hash/0` pass through as `Explorer.Chain` can verify correct
   # hash format
   defp entry_to_elixir({key, _} = entry, _block)
-       when key in ~w(author extraData hash logsBloom miner mixHash nonce parentHash receiptsRoot sealFields sha3Uncles signature stateRoot step transactionsRoot uncles withdrawalsRoot bitcoinMergedMiningHeader bitcoinMergedMiningCoinbaseTransaction bitcoinMergedMiningMerkleProof hashForMergedMining manifestHashFull numberFull parentHashFull extRollupRoot extTransactionsRoot subManifest location totalEntropy parentEntropy parentDeltaS parentEntropyFull parentDeltaSFull evmRoot utxoRoot etxSetHash etxEligibleSlices primeTerminus interlinkRootHash interlinkHashes manifestHash parentUncledS),
+       when key in ~w(author extraData hash logsBloom miner mixHash nonce parentHash receiptsRoot sealFields sha3Uncles signature stateRoot step transactionsRoot uncles withdrawalsRoot bitcoinMergedMiningHeader bitcoinMergedMiningCoinbaseTransaction bitcoinMergedMiningMerkleProof hashForMergedMining manifestHashFull numberFull parentHashFull extRollupRoot extTransactionsRoot subManifest location totalEntropy parentEntropy parentDeltaS parentEntropyFull parentDeltaSFull evmRoot utxoRoot etxSetHash etxEligibleSlices primeTerminus interlinkRootHash interlinkHashes manifestHash parentUncledS parentUncledSubDeltaS),
        do: entry
 
   defp entry_to_elixir({"timestamp" = key, timestamp}, _block) do

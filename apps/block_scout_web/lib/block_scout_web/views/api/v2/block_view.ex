@@ -73,6 +73,21 @@ defmodule BlockScoutWeb.API.V2.BlockView do
       "parent_delta_s" => block.parent_delta_s,
       "parent_entropy_full" => block.parent_entropy_full,
       "parent_delta_s_full" => block.parent_delta_s_full,
+      "evm_root" => block.evm_root,
+      "utxo_root" => block.utxo_root,
+      "etx_set_hash" => block.etx_set_hash,
+      "parent_uncled_sub_delta_s" => block.parent_uncled_sub_delta_s,
+      "efficiency_score" => block.efficiency_score,
+      "threshold_count" => block.threshold_count,
+      "expansion_number" => block.expansion_number,
+      "etx_eligible_slices" => block.etx_eligible_slices,
+      "prime_terminus" => block.prime_terminus,
+      "interlink_root_hash" => block.interlink_root_hash,
+      "uncled_s" => block.uncled_s,
+      "uncles" => block.uncles,
+      "interlink_hashes" => block.interlink_hashes,
+      "wo_body" => block.wo_body,
+      "wo_header" => block.wo_header
     }
     |> chain_type_fields(block, single_block?)
   end
