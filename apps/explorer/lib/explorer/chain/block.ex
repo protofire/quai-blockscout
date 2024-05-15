@@ -122,7 +122,7 @@ defmodule Explorer.Chain.Block do
 
   use Explorer.Schema
 
-  alias Explorer.Chain.{Block, Hash, Transaction, ExternalTransaction, Wei}
+  alias Explorer.Chain.{Block, Hash, Transaction, Wei}
   alias Explorer.Chain.Block.{EmissionReward, Reward}
   alias Explorer.Repo
 
