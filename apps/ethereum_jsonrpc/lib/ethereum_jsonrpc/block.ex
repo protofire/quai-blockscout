@@ -351,7 +351,6 @@ defmodule EthereumJSONRPC.Block do
            "hash" => hash,
            "miner" => miner_hash,
            "mixHash" => mix_hash,
-           "nonce" => nonce,
            "receiptsRoot" => receipts_root,
            "sha3Uncles" => sha3_uncles,
            "size" => size,
@@ -363,13 +362,14 @@ defmodule EthereumJSONRPC.Block do
              "time" => timestamp,
              "difficulty" => difficulty,
              "number" => number,
-             "parentHash" => parent_hash
+             "parentHash" => parent_hash,
+             "nonce" => nonce
            }
          } = _elixir
        ) do
     %{
       base_fee_per_gas: base_fee_per_gas,
-      difficulty: quantity_to_integer(difficulty),
+      difficulty: difficulty,
       extra_data: extra_data,
       gas_limit: gas_limit,
       gas_used: gas_used,
@@ -377,7 +377,7 @@ defmodule EthereumJSONRPC.Block do
       miner_hash: miner_hash,
       mix_hash: mix_hash,
       nonce: nonce,
-      number: quantity_to_integer(number),
+      number: number,
       parent_hash: parent_hash,
       receipts_root: receipts_root,
       sha3_uncles: sha3_uncles,
@@ -385,7 +385,7 @@ defmodule EthereumJSONRPC.Block do
       state_root: state_root,
       transactions: transactions,
       transactions_root: transactions_root,
-      timestamp: timestamp_to_datetime(timestamp),
+      timestamp: timestamp,
       uncles: uncles
     }
   end
@@ -893,7 +893,7 @@ defmodule EthereumJSONRPC.Block do
   end
 
   defp entry_to_elixir({key, quantity}, _block)
-       when key in ~w(difficulty gasLimit gasUsed minimumGasPrice baseFeePerGas number size cumulativeDifficulty totalDifficulty paidFees minimumGasPrice blobGasUsed excessBlobGas efficiencyScore thresholdCount expansionNumber uncledS) and
+       when key in ~w(difficulty gasLimit gasUsed minimumGasPrice baseFeePerGas number size cumulativeDifficulty totalDifficulty paidFees minimumGasPrice blobGasUsed excessBlobGas efficiencyScore thresholdCount expansionNumber uncledS nonce) and
               not is_nil(quantity) do
     {key, quantity_to_integer(quantity)}
   end
@@ -911,10 +911,10 @@ defmodule EthereumJSONRPC.Block do
   # `t:EthereumJSONRPC.address/0` and `t:EthereumJSONRPC.hash/0` pass through as `Explorer.Chain` can verify correct
   # hash format
   defp entry_to_elixir({key, _} = entry, _block)
-       when key in ~w(author extraData hash logsBloom miner mixHash nonce parentHash receiptsRoot sealFields sha3Uncles signature stateRoot step transactionsRoot uncles withdrawalsRoot bitcoinMergedMiningHeader bitcoinMergedMiningCoinbaseTransaction bitcoinMergedMiningMerkleProof hashForMergedMining manifestHashFull numberFull parentHashFull extRollupRoot extTransactionsRoot subManifest location totalEntropy parentEntropy parentDeltaS parentEntropyFull parentDeltaSFull evmRoot utxoRoot etxSetHash etxEligibleSlices primeTerminus interlinkRootHash interlinkHashes manifestHash parentUncledS parentUncledSubDeltaS),
+       when key in ~w(author extraData hash logsBloom miner mixHash parentHash receiptsRoot sealFields sha3Uncles signature stateRoot step transactionsRoot uncles withdrawalsRoot bitcoinMergedMiningHeader bitcoinMergedMiningCoinbaseTransaction bitcoinMergedMiningMerkleProof hashForMergedMining manifestHashFull numberFull parentHashFull extRollupRoot extTransactionsRoot subManifest location totalEntropy parentEntropy parentDeltaS parentEntropyFull parentDeltaSFull evmRoot utxoRoot etxSetHash etxEligibleSlices primeTerminus interlinkRootHash interlinkHashes manifestHash parentUncledS parentUncledSubDeltaS),
        do: entry
 
-  defp entry_to_elixir({"timestamp" = key, timestamp}, _block) do
+  defp entry_to_elixir({"time" = key, timestamp}, _block) do
     {key, timestamp_to_datetime(timestamp)}
   end
 
@@ -949,8 +949,12 @@ defmodule EthereumJSONRPC.Block do
   end
 
   # Quai Golden Age
+
   defp entry_to_elixir({"woBody", woBody} = entry, _block) when is_map(woBody), do: entry
-  defp entry_to_elixir({"woHeader", woHeader} = entry, _block) when is_map(woHeader), do: entry
+
+  defp entry_to_elixir({"woHeader", woHeader}, _block) when is_map(woHeader) do
+    {"woHeader", Enum.into(woHeader, %{}, &entry_to_elixir(&1, woHeader))}
+  end
 
   defp entry_to_elixir({key, quantity}) do
     if is_list(quantity) do
