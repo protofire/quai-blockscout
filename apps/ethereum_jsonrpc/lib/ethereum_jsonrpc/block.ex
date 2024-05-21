@@ -9,7 +9,14 @@ defmodule EthereumJSONRPC.Block do
 
   alias EthereumJSONRPC.{Transactions, Uncles, Withdrawals}
 
-  # TODO: Possible not correct
+  # For QUAI we need extract the uncle hash from the uncle object
+  def extract_block_uncles(block) do
+    uncles = block["uncles"]
+    block = Map.delete(block, "uncles")
+
+    Map.put(block, "uncles", Enum.map(uncles, fn uncle -> Map.get(uncle, "headerHash") end))
+  end
+
   def map_keys(object) do
     # Use Enum.reduce to iterate over the key-value pairs in the object
     Enum.reduce(object, %{}, fn {key, value}, acc ->
@@ -173,7 +180,9 @@ defmodule EthereumJSONRPC.Block do
         {:ok,
          block
          |> Map.merge(header)
-         |> map_keys()}
+         |> extract_block_uncles() # QUAI specific
+         |> map_keys()
+        }
 
       _ ->
         {:ok, map_keys(block)}
@@ -316,7 +325,9 @@ defmodule EthereumJSONRPC.Block do
         state_root: "0x6fd0a5d82ca77d9f38c3ebbde11b11d304a5fcf3854f291df64395ab38ed43ba",
         timestamp: Timex.parse!("2015-07-30T15:32:07Z", "{ISO:Extended:Z}"),
         total_difficulty: 1039309006117,
-        transactions_root: "0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421",\
+        transactions_root: "0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421",
+        uncles: []
+    }
   #{case Application.compile_env(:explorer, :chain_type) do
     "rsk" -> """
             bitcoin_merged_mining_coinbase_transaction: nil,\
@@ -332,9 +343,8 @@ defmodule EthereumJSONRPC.Block do
       """
     _ -> ""
   end}
-        uncles: []
-      }
   """
+
   @spec elixir_to_params(elixir) :: params
   def elixir_to_params(elixir) do
     elixir
