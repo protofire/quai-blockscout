@@ -9,12 +9,35 @@ defmodule EthereumJSONRPC.Block do
 
   alias EthereumJSONRPC.{Transactions, Uncles, Withdrawals}
 
+  @spec compute_uncle_hash(String.t(), String.t(), String.t(), String.t(), String.t(), String.t(), String.t(), String.t(), String.t()) :: String.t()
+  def compute_uncle_hash(difficulty, headerHash, location, mixHash, nonce, number, parentHash, time, txHash) do
+    # Concatenate the fields into a single string
+    header_string = "#{difficulty}#{headerHash}#{location}#{mixHash}#{nonce}#{number}#{parentHash}#{time}#{txHash}"
+
+    # Compute the Keccak-256 hash of the concatenated header string
+    hash = ExKeccak.hash_256(header_string)
+
+    # Convert the binary hash to a hexadecimal string
+    hash
+      |> Base.encode16(case: :lower)
+  end
+
   # For QUAI we need extract the uncle hash from the uncle object
   def extract_block_uncles(block) do
     uncles = block["uncles"]
     block = Map.delete(block, "uncles")
 
-    Map.put(block, "uncles", Enum.map(uncles, fn uncle -> Map.get(uncle, "headerHash") end))
+    Map.put(block, "uncles", Enum.map(uncles, fn uncle -> "0x" <> compute_uncle_hash(
+                                                            uncle["difficulty"],
+                                                            uncle["headerHash"],
+                                                            uncle["location"],
+                                                            uncle["mixHash"],
+                                                            uncle["nonce"],
+                                                            uncle["number"],
+                                                            uncle["parentHash"],
+                                                            uncle["time"],
+                                                            uncle["txHash"]
+                                                          ) end))
   end
 
   def map_keys(object) do
