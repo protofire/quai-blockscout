@@ -19,6 +19,16 @@ defmodule Explorer.Chain.Transaction.Schema do
   alias Explorer.Chain.ZkSync.BatchTransaction, as: ZkSyncBatchTransaction
 
   @chain_type_fields (case Application.compile_env(:explorer, :chain_type) do
+                        "quai" ->
+                          elem(
+                            quote do
+                              field(:chain_id, :integer)
+                              field(:inputs, {:array, :map})
+                              field(:outputs, {:array, :map})
+                              field(:utxo_signature, Data)
+                            end,
+                            2
+                          )
                         "ethereum" ->
                           # elem(quote do ... end, 2) doesn't work with a single has_one instruction
                           quote do
@@ -140,7 +150,7 @@ defmodule Explorer.Chain.Transaction.Schema do
         field(:s, :decimal)
         field(:status, Status)
         field(:v, :decimal)
-        field(:value, Wei)
+        field(:value, Wei) :: Wei.t() | nil
         field(:revert_reason, :string)
         field(:max_priority_fee_per_gas, Wei)
         field(:max_fee_per_gas, Wei)
@@ -239,8 +249,9 @@ defmodule Explorer.Chain.Transaction do
 
   @optimism_optional_attrs ~w(l1_fee l1_fee_scalar l1_gas_price l1_gas_used l1_tx_origin l1_block_number)a
   @suave_optional_attrs ~w(execution_node_hash wrapped_type wrapped_nonce wrapped_to_address_hash wrapped_gas wrapped_gas_price wrapped_max_priority_fee_per_gas wrapped_max_fee_per_gas wrapped_value wrapped_input wrapped_v wrapped_r wrapped_s wrapped_hash)a
+  @quai_optional_attrs ~w(chain_id inputs outputs utxo_signature)a
 
-  @required_attrs ~w(from_address_hash gas hash input nonce value)a
+  @required_attrs ~w(gas hash input nonce)a
 
   @empty_attrs ~w()a
 
@@ -578,6 +589,7 @@ defmodule Explorer.Chain.Transaction do
 
   defp custom_optional_attrs do
     case Application.get_env(:explorer, :chain_type) do
+      "quai" -> @quai_optional_attrs
       "suave" -> @suave_optional_attrs
       "optimism" -> @optimism_optional_attrs
       _ -> @empty_attrs
@@ -991,7 +1003,7 @@ defmodule Explorer.Chain.Transaction do
     where(query, [t], is_nil(t.error) or t.error != "dropped/replaced")
   end
 
-  @collated_fields ~w(block_number cumulative_gas_used gas_used index)a
+  @collated_fields ~w(block_number)a # Not for QUAI: cumulative_gas_used gas_used index
 
   @collated_message "can't be blank when the transaction is collated into a block"
   @collated_field_to_check Enum.into(@collated_fields, %{}, fn collated_field ->

@@ -142,6 +142,7 @@ defmodule Indexer.Block.Fetcher do
            %Blocks{
              blocks_params: blocks_params,
              transactions_params: transactions_params_without_receipts,
+             utxo_transactions_params: utxo_transactions,
              ext_transactions_params: ext_transactions,
              withdrawals_params: withdrawals_params,
              block_second_degree_relations_params: block_second_degree_relations_params,
@@ -227,7 +228,8 @@ defmodule Indexer.Block.Fetcher do
            polygon_edge_deposit_executes: polygon_edge_deposit_executes,
            polygon_zkevm_bridge_operations: polygon_zkevm_bridge_operations,
            shibarium_bridge_operations: shibarium_bridge_operations,
-           ext_transactions: ext_transactions
+           ext_transactions: ext_transactions,
+           utxo_transactions: utxo_transactions
          },
          {:ok, inserted} <-
            __MODULE__.import(
@@ -262,12 +264,14 @@ defmodule Indexer.Block.Fetcher do
          polygon_edge_deposit_executes: polygon_edge_deposit_executes,
          polygon_zkevm_bridge_operations: polygon_zkevm_bridge_operations,
          shibarium_bridge_operations: shibarium_bridge_operations,
-         ext_transactions: ext_transactions
+         ext_transactions: ext_transactions,
+         utxo_transactions: utxo_transactions
        }) do
     case Application.get_env(:explorer, :chain_type) do
       "quai" ->
         basic_import_options
         |> Map.put_new(:ext_transactions, %{params: ext_transactions})
+        |> Map.put(:transactions, %{params: transactions_with_receipts ++ utxo_transactions})
 
       "ethereum" ->
         basic_import_options
@@ -454,6 +458,9 @@ defmodule Indexer.Block.Fetcher do
     |> Enum.flat_map(fn
       %Transaction{block_hash: %Hash{} = block_hash, nonce: nonce, from_address_hash: %Hash{} = from_address_hash} ->
         [%{block_hash: block_hash, nonce: nonce, from_address_hash: from_address_hash}]
+
+      %Transaction{block_hash: %Hash{} = _} ->
+        []
 
       %Transaction{block_hash: nil} ->
         []

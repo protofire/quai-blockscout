@@ -700,12 +700,38 @@ defmodule EthereumJSONRPC.Block do
 
   """
   @spec elixir_to_transactions(elixir) :: Transactions.elixir()
-  def elixir_to_transactions(%{"transactions" => transactions}), do: transactions
+  def elixir_to_transactions(elixir) do
+    # Return all transaction or empty list
+    Map.get(elixir, "transactions", [])
+  end
+
+  # This transaction return all non system transactions that required receipts
+  @spec elixir_to_transactions_required_receipts(elixir) :: Transactions.elixir()
+  def elixir_to_transactions_required_receipts(elixir) do
+    Map.get(elixir, "transactions", [])
+    |> Enum.filter(fn tx -> Map.get(tx, "type", 0) != 2 end)
+  end
 
   def elixir_to_transactions(_), do: []
 
   @spec elixir_to_ext_transactions(elixir) :: Transactions.elixir()
   def elixir_to_ext_transactions(%{"extTransactions" => extTransactions}), do: extTransactions
+
+  @spec elixir_to_utxo_transactions(elixir) :: Transactions.elixir()
+  def elixir_to_utxo_transactions(elixir) do
+    blockNumber = Map.get(elixir, "woHeader", %{}) |> Map.get("number", nil)
+    blockHash = Map.get(elixir, "hash", nil)
+
+    # Filter transactions by type == 2, because of type 2 it's a UTXO transaction
+    Map.get(elixir, "transactions", [])
+    # Getting all UTXO transactions
+    |> Enum.filter(fn tx -> Map.get(tx, "type", 0) == 2 end)
+    # Set current block number and block hash for all UTXO transactions
+    |> Enum.map(fn tx -> Map.put(tx, "blockNumber", blockNumber) end)
+    |> Enum.map(fn tx -> Map.put(tx, "blockHash", blockHash) end)
+    # Add status 1 for all UTXO transactions
+    |> Enum.map(fn tx -> Map.put(tx, "status", 1) end)
+  end
 
   def elixir_to_ext_transactions(_), do: []
 
@@ -947,6 +973,8 @@ defmodule EthereumJSONRPC.Block do
        when key in ~w(author extraData hash logsBloom miner mixHash parentHash receiptsRoot sealFields sha3Uncles signature stateRoot step transactionsRoot uncles withdrawalsRoot bitcoinMergedMiningHeader bitcoinMergedMiningCoinbaseTransaction bitcoinMergedMiningMerkleProof hashForMergedMining manifestHashFull numberFull parentHashFull extRollupRoot extTransactionsRoot subManifest location totalEntropy parentEntropy parentDeltaS parentEntropyFull parentDeltaSFull evmRoot utxoRoot etxSetHash etxEligibleSlices primeTerminus interlinkRootHash interlinkHashes manifestHash parentUncledS parentUncledSubDeltaS),
        do: entry
 
+  # QUAI Golden Age. This function will handled by entry_to_elixir that execute entry_to_elixir for each element of the list
+  # Then we will have "timestamp" field
   defp entry_to_elixir({"time" = key, timestamp}, _block) do
     {key, timestamp_to_datetime(timestamp)}
   end
@@ -955,12 +983,8 @@ defmodule EthereumJSONRPC.Block do
     {key, Transactions.to_elixir(transactions, timestamp_to_datetime(block_timestamp))}
   end
 
-  @doc """
-  Might be temprorary. Current the transactions key in the root contains only
-  the hash of UTXO transactions, so for now I'll just ignore it.
-  """
-  defp entry_to_elixir({"transactions" = key, transactions}, _block) do
-    {key, []}
+  defp entry_to_elixir({"transactions" = key, transactions}, %{"woHeader" => woHeader}) when is_map(woHeader) do
+    {key, Transactions.to_elixir(transactions, timestamp_to_datetime(Map.get(woHeader, "time", 0)))}
   end
 
   defp entry_to_elixir({"extTransactions" = key, extTransactions}, _block) do
@@ -982,7 +1006,6 @@ defmodule EthereumJSONRPC.Block do
   end
 
   # Quai Golden Age
-
   defp entry_to_elixir({"woBody", woBody} = entry, _block) when is_map(woBody), do: entry
 
   defp entry_to_elixir({"woHeader", woHeader}, _block) when is_map(woHeader) do

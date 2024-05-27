@@ -77,7 +77,7 @@ defmodule BlockScoutWeb.API.V2.BlockController do
     necessity_by_association:
       %{
         [miner: :names] => :optional,
-        :uncles => :optional,
+#        :uncles => :optional,
         :nephews => :optional,
         :rewards => :optional,
         :transactions => :optional,

@@ -11,6 +11,7 @@ defmodule EthereumJSONRPC.Blocks do
   @type t :: %__MODULE__{
           blocks_params: [map()],
           block_second_degree_relations_params: [map()],
+          utxo_transactions_params: [map()],
           transactions_params: [map()],
           ext_transactions_params: [map()],
           withdrawals_params: Withdrawals.params(),
@@ -19,6 +20,7 @@ defmodule EthereumJSONRPC.Blocks do
 
   defstruct blocks_params: [],
             block_second_degree_relations_params: [],
+            utxo_transactions_params: [],
             transactions_params: [],
             ext_transactions_params: [],
             withdrawals_params: [],
@@ -49,12 +51,14 @@ defmodule EthereumJSONRPC.Blocks do
     elixir_blocks = to_elixir(blocks)
 
     elixir_uncles = elixir_to_uncles(elixir_blocks)
-    elixir_transactions = elixir_to_transactions(elixir_blocks)
+    elixir_utxo_transactions = elixir_to_utxo_transactions(elixir_blocks)
+    elixir_transactions_required_receipts = elixir_to_transactions_required_receipts(elixir_blocks)
     elixir_ext_transactions = elixir_to_ext_transactions(elixir_blocks)
     elixir_withdrawals = elixir_to_withdrawals(elixir_blocks)
 
     block_second_degree_relations_params = Uncles.elixir_to_params(elixir_uncles)
-    transactions_params = Transactions.elixir_to_params(elixir_transactions)
+    utxo_transactions_params = Transactions.elixir_to_params(elixir_utxo_transactions)
+    transactions_required_receipts_params = Transactions.elixir_to_params(elixir_transactions_required_receipts)
     ext_transactions_params = Transactions.elixir_to_params(elixir_ext_transactions)
     withdrawals_params = Withdrawals.elixir_to_params(elixir_withdrawals)
     blocks_params = elixir_to_params(elixir_blocks)
@@ -63,8 +67,9 @@ defmodule EthereumJSONRPC.Blocks do
       errors: errors,
       blocks_params: blocks_params,
       block_second_degree_relations_params: block_second_degree_relations_params,
-      transactions_params: transactions_params,
+      utxo_transactions_params: utxo_transactions_params,
       ext_transactions_params: ext_transactions_params,
+      transactions_params: transactions_required_receipts_params,
       withdrawals_params: withdrawals_params
     }
   end
@@ -225,9 +230,9 @@ defmodule EthereumJSONRPC.Blocks do
       ]
 
   """
-  @spec elixir_to_transactions(elixir) :: Transactions.elixir()
-  def elixir_to_transactions(elixir) when is_list(elixir) do
-    Enum.flat_map(elixir, &Block.elixir_to_transactions/1)
+  @spec elixir_to_transactions_required_receipts(elixir) :: Transactions.elixir()
+  def elixir_to_transactions_required_receipts(elixir) when is_list(elixir) do
+    Enum.flat_map(elixir, &Block.elixir_to_transactions_required_receipts/1)
   end
 
   @spec elixir_to_ext_transactions(elixir) :: Transactions.elixir()
@@ -240,6 +245,14 @@ defmodule EthereumJSONRPC.Blocks do
       # |> Enum.map(fn etx -> Map.put(etx, "created_contract_address", "0x0000000000000000000000000000000000000000") end)
       |> Enum.map(fn etx -> Map.put(etx, "status", :ok) end)
       |> Enum.map(fn etx -> Map.put(etx, "transaction_hash", transaction["hash"]) end)
+    end)
+  end
+
+  @spec elixir_to_utxo_transactions(elixir) :: Transactions.elixir()
+  def elixir_to_utxo_transactions(elixir) when is_list(elixir) do
+    Enum.flat_map(elixir, fn block ->
+      block
+      |> Block.elixir_to_utxo_transactions()
     end)
   end
 

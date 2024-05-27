@@ -13,7 +13,13 @@ defmodule EthereumJSONRPC.Transaction do
 
   case Application.compile_env(:explorer, :chain_type) do
     "quai" ->
-      @chain_type_fields quote(do: [])
+      @chain_type_fields quote(
+                           do: [
+                             chain_id: non_neg_integer(),
+                             inputs: EthereumJSONRPC.data(),
+                             outputs: EthereumJSONRPC.data()
+                           ]
+                         )
 
     "ethereum" ->
       @chain_type_fields quote(
@@ -255,6 +261,42 @@ defmodule EthereumJSONRPC.Transaction do
     elixir
     |> do_elixir_to_params()
     |> chain_type_fields(elixir)
+  end
+
+  # QUAI UTXO transactions
+  def do_elixir_to_params(
+        %{
+            "blockHash" => block_hash,
+            "blockNumber" => block_number,
+            "block_timestamp" => block_timestamp,
+            "chainId" => chain_id,
+            "gas" => gas,
+            "hash" => hash,
+            "input" => input,
+            "inputs" => inputs,
+            "nonce" => nonce,
+            "outputs" => outputs,
+            "transactionIndex" => transaction_index,
+            "type" => type,
+            "utxoSignature" => utxo_signature
+        } = transaction
+      ) do
+    %{
+      block_hash: block_hash,
+      block_number: block_number,
+      block_timestamp: block_timestamp,
+      chain_id: chain_id,
+      gas: gas,
+      hash: hash,
+      input: input,
+      inputs: inputs,
+      nonce: nonce,
+      outputs: outputs,
+      utxo_signature: utxo_signature,
+      transaction_index: transaction_index,
+      type: type,
+      status: 1, # confirmed
+    }
   end
 
   def do_elixir_to_params(
@@ -517,6 +559,14 @@ defmodule EthereumJSONRPC.Transaction do
 
   defp chain_type_fields(params, elixir) do
     case Application.get_env(:explorer, :chain_type) do
+      "quai" ->
+        params
+        |> Map.merge(%{
+          inputs: Map.get(elixir, "inputs"),
+          ouputs: Map.get(elixir, "outputs"),
+          utxoSignature: Map.get(elixir, "utxoSignature")
+        })
+
       "ethereum" ->
         put_if_present(elixir, params, [
           {"blobVersionedHashes", :blob_versioned_hashes},
@@ -670,7 +720,7 @@ defmodule EthereumJSONRPC.Transaction do
   #
   # "txType": to avoid FunctionClauseError when indexing Wanchain
   defp entry_to_elixir({key, value})
-       when key in ~w(blockHash condition creates from hash input jsonrpc publicKey raw to txType executionNode requestRecord blobVersionedHashes),
+       when key in ~w(blockHash condition creates from hash input jsonrpc publicKey raw to txType executionNode requestRecord blobVersionedHashes inputs outputs utxoSignature),
        do: {key, value}
 
   # specific to Nethermind client
@@ -681,6 +731,7 @@ defmodule EthereumJSONRPC.Transaction do
   defp entry_to_elixir({"from", _value} = tuple, %{"type" => "0x1", "sender" => sender}) do
     {"from", sender}
   end
+
   defp entry_to_elixir(tuple, _transaction) do
     entry_to_elixir(tuple)
   end
