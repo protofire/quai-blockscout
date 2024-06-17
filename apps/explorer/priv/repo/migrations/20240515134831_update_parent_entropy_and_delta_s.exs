@@ -5,7 +5,7 @@ defmodule Explorer.Repo.Migrations.UpdateParentEntropyAndDeltaS do
     alter table(:blocks) do
       add(:evm_root, :bytea)
       add(:utxo_root, :bytea)
-      add(:etx_set_hash, :bytea)
+      add(:etx_set_root, :bytea)
       add(:parent_uncled_sub_delta_s, {:array, :binary})
       add(:efficiency_score, :decimal)
       add(:threshold_count, :decimal)

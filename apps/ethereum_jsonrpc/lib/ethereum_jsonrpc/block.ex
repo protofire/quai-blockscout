@@ -9,37 +9,6 @@ defmodule EthereumJSONRPC.Block do
 
   alias EthereumJSONRPC.{Transactions, Uncles, Withdrawals}
 
-  @spec compute_uncle_hash(String.t(), String.t(), String.t(), String.t(), String.t(), String.t(), String.t(), String.t(), String.t()) :: String.t()
-  def compute_uncle_hash(difficulty, headerHash, location, mixHash, nonce, number, parentHash, time, txHash) do
-    # Concatenate the fields into a single string
-    header_string = "#{difficulty}#{headerHash}#{location}#{mixHash}#{nonce}#{number}#{parentHash}#{time}#{txHash}"
-
-    # Compute the Keccak-256 hash of the concatenated header string
-    hash = ExKeccak.hash_256(header_string)
-
-    # Convert the binary hash to a hexadecimal string
-    hash
-      |> Base.encode16(case: :lower)
-  end
-
-  # For QUAI we need extract the uncle hash from the uncle object
-  def extract_block_uncles(block) do
-    uncles = block["uncles"]
-    block = Map.delete(block, "uncles")
-
-    Map.put(block, "uncles", Enum.map(uncles, fn uncle -> "0x" <> compute_uncle_hash(
-                                                            uncle["difficulty"],
-                                                            uncle["headerHash"],
-                                                            uncle["location"],
-                                                            uncle["mixHash"],
-                                                            uncle["nonce"],
-                                                            uncle["number"],
-                                                            uncle["parentHash"],
-                                                            uncle["time"],
-                                                            uncle["txHash"]
-                                                          ) end))
-  end
-
   def map_keys(object) do
     # Use Enum.reduce to iterate over the key-value pairs in the object
     Enum.reduce(object, %{}, fn {key, value}, acc ->
@@ -203,7 +172,6 @@ defmodule EthereumJSONRPC.Block do
         {:ok,
          block
          |> Map.merge(header)
-         |> extract_block_uncles() # QUAI specific
          |> map_keys()
         }
 
@@ -578,7 +546,7 @@ defmodule EthereumJSONRPC.Block do
           # Golden Age
           evm_root: Map.get(elixir, "evmRoot"),
           utxo_root: Map.get(elixir, "utxoRoot"),
-          etx_set_hash: Map.get(elixir, "etxSetHash"),
+          etx_set_root: Map.get(elixir, "etxSetRoot"),
           parent_uncled_sub_delta_s: Map.get(elixir, "parentUncledSubDeltaS"),
           efficiency_score: Map.get(elixir, "efficiencyScore", 0),
           threshold_count: Map.get(elixir, "thresholdCount", 0),
@@ -779,10 +747,22 @@ defmodule EthereumJSONRPC.Block do
 
   """
   @spec elixir_to_uncles(elixir) :: Uncles.elixir()
-  def elixir_to_uncles(%{"hash" => nephew_hash, "uncles" => uncles}) do
+  def elixir_to_uncles(%{"hash" => nephew_hash, "uncles" => []}) do
+    []
+  end
+
+  @spec elixir_to_uncles(elixir) :: Uncles.elixir()
+  def elixir_to_uncles(%{"hash" => nephew_hash, "uncles" => [first | _] = uncles}) when is_binary(first) do
     uncles
     |> Enum.with_index()
     |> Enum.map(fn {uncle_hash, index} -> %{"hash" => uncle_hash, "nephewHash" => nephew_hash, "index" => index} end)
+  end
+
+  @spec elixir_to_uncles(elixir) :: Uncles.elixir()
+  def elixir_to_uncles(%{"hash" => nephew_hash, "uncles" => [first | _] = uncles}) when is_map(first) do
+    uncles
+    |> Enum.with_index()
+    |> Enum.map(fn {uncle_hash, index} -> %{"workObject" => uncle_hash, "nephewHash" => nephew_hash, "index" => index} end)
   end
 
   @doc """
@@ -970,7 +950,7 @@ defmodule EthereumJSONRPC.Block do
   # `t:EthereumJSONRPC.address/0` and `t:EthereumJSONRPC.hash/0` pass through as `Explorer.Chain` can verify correct
   # hash format
   defp entry_to_elixir({key, _} = entry, _block)
-       when key in ~w(author extraData hash logsBloom miner mixHash parentHash receiptsRoot sealFields sha3Uncles signature stateRoot step transactionsRoot uncles withdrawalsRoot bitcoinMergedMiningHeader bitcoinMergedMiningCoinbaseTransaction bitcoinMergedMiningMerkleProof hashForMergedMining manifestHashFull numberFull parentHashFull extRollupRoot extTransactionsRoot subManifest location totalEntropy parentEntropy parentDeltaS parentEntropyFull parentDeltaSFull evmRoot utxoRoot etxSetHash etxEligibleSlices primeTerminus interlinkRootHash interlinkHashes manifestHash parentUncledS parentUncledSubDeltaS),
+       when key in ~w(author extraData hash logsBloom miner mixHash parentHash receiptsRoot sealFields sha3Uncles signature stateRoot step transactionsRoot uncles withdrawalsRoot bitcoinMergedMiningHeader bitcoinMergedMiningCoinbaseTransaction bitcoinMergedMiningMerkleProof hashForMergedMining manifestHashFull numberFull parentHashFull extRollupRoot extTransactionsRoot subManifest location totalEntropy parentEntropy parentDeltaS parentEntropyFull parentDeltaSFull evmRoot utxoRoot etxSetRoot etxEligibleSlices primeTerminus interlinkRootHash interlinkHashes manifestHash parentUncledS parentUncledSubDeltaS),
        do: entry
 
   # QUAI Golden Age. This function will handled by entry_to_elixir that execute entry_to_elixir for each element of the list
