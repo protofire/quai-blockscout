@@ -287,6 +287,8 @@ defmodule EthereumJSONRPC.Transaction do
       block_timestamp: block_timestamp,
       chain_id: chain_id,
       gas: gas,
+      gas_price: 0,
+      gas_used: 0,
       hash: hash,
       input: input,
       inputs: inputs,

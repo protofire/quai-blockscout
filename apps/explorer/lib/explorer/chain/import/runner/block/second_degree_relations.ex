@@ -66,19 +66,17 @@ defmodule Explorer.Chain.Import.Runner.Block.SecondDegreeRelations do
           {:ok, nil | %{nephew_hash: Hash.Full.t(), uncle_hash: Hash.Full.t(), index: non_neg_integer()}}
           | {:error, [Changeset.t()]}
   defp insert(repo, changes_list, %{timeout: timeout} = options) when is_atom(repo) and is_list(changes_list) do
-    on_conflict = Map.get_lazy(options, :on_conflict, &default_on_conflict/0)
+#    on_conflict = Map.get_lazy(options, :on_conflict, &default_on_conflict/0)
 
     # Enforce SeconDegreeRelation ShareLocks order (see docs: sharelocks.md)
     ordered_changes_list =
       changes_list
-      |> Enum.sort_by(&{&1.nephew_hash, &1.uncle_hash})
+      |> Enum.sort_by(&{&1.nephew_hash}) # , &1.uncle_hash
       |> Enum.dedup()
 
     Import.insert_changes_list(repo, ordered_changes_list,
-      conflict_target: [:nephew_hash, :uncle_hash],
-      on_conflict: on_conflict,
       for: Block.SecondDegreeRelation,
-      returning: [:nephew_hash, :uncle_hash, :index],
+      returning: [:nephew_hash, :uncle_hash, :index, :work_object],
       timeout: timeout,
       # block_second_degree_relations doesn't have timestamps
       timestamps: %{}

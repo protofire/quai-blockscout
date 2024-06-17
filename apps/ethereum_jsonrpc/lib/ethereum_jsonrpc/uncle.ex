@@ -15,7 +15,12 @@ defmodule EthereumJSONRPC.Uncle do
   """
   @type t :: %{String.t() => EthereumJSONRPC.hash()}
 
-  @type params :: %{nephew_hash: EthereumJSONRPC.hash(), uncle_hash: EthereumJSONRPC.hash(), index: non_neg_integer()}
+  @type params :: %{
+                    nephew_hash: EthereumJSONRPC.hash(),
+                    uncle_hash: EthereumJSONRPC.hash(),
+                    index: non_neg_integer(),
+                    work_object: map()
+                  }
 
   @doc """
   Converts each entry in `t:elixir/0` to `t:params/0` used in `Explorer.Chain.Uncle.changeset/2`.
@@ -38,5 +43,11 @@ defmodule EthereumJSONRPC.Uncle do
   def elixir_to_params(%{"hash" => uncle_hash, "nephewHash" => nephew_hash, "index" => index})
       when is_binary(uncle_hash) and is_binary(nephew_hash) and is_integer(index) do
     %{nephew_hash: nephew_hash, uncle_hash: uncle_hash, index: index}
+  end
+
+  @spec elixir_to_params(elixir) :: params
+  def elixir_to_params(%{"workObject" => work_object, "nephewHash" => nephew_hash, "index" => index})
+      when is_map(work_object) and is_binary(nephew_hash) and is_integer(index) do
+    %{nephew_hash: nephew_hash, work_object: work_object, index: index}
   end
 end
