@@ -75,7 +75,7 @@ defmodule BlockScoutWeb.API.V2.BlockView do
       "parent_delta_s_full" => block.parent_delta_s_full,
       "evm_root" => block.evm_root,
       "utxo_root" => block.utxo_root,
-      "etx_set_hash" => block.etx_set_hash,
+      "etx_set_root" => block.etx_set_root,
       "parent_uncled_sub_delta_s" => block.parent_uncled_sub_delta_s,
       "efficiency_score" => block.efficiency_score,
       "threshold_count" => block.threshold_count,

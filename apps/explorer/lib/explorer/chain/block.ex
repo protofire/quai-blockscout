@@ -28,7 +28,7 @@ defmodule Explorer.Chain.Block.Schema do
                               # Golden Age
                               field(:evm_root, Hash.Full)
                               field(:utxo_root, Hash.Full)
-                              field(:etx_set_hash, Hash.Full)
+                              field(:etx_set_root, Hash.Full)
                               field(:parent_uncled_sub_delta_s, {:array, :binary})
                               field(:efficiency_score, :decimal)
                               field(:threshold_count, :decimal)
@@ -145,7 +145,7 @@ defmodule Explorer.Chain.Block do
                   |> (&(case Application.compile_env(:explorer, :chain_type) do
                           "quai" ->
                             &1 ++
-                              ~w(manifest_hash_full number_full parent_hash_full ext_rollup_root transactions_root ext_transactions_root sub_manifest location is_prime_coincident is_region_coincident total_entropy parent_entropy parent_delta_s parent_entropy_full parent_delta_s_full evm_root utxo_root etx_set_hash parent_uncled_sub_delta_s efficiency_score threshold_count expansion_number etx_eligible_slices prime_terminus interlink_root_hash uncled_s interlink_hashes wo_body wo_header)a
+                              ~w(manifest_hash_full number_full parent_hash_full ext_rollup_root transactions_root ext_transactions_root sub_manifest location is_prime_coincident is_region_coincident total_entropy parent_entropy parent_delta_s parent_entropy_full parent_delta_s_full evm_root utxo_root etx_set_root parent_uncled_sub_delta_s efficiency_score threshold_count expansion_number etx_eligible_slices prime_terminus interlink_root_hash uncled_s interlink_hashes wo_body wo_header)a
 
                           "rsk" ->
                             &1 ++
