@@ -762,7 +762,13 @@ defmodule EthereumJSONRPC.Block do
   def elixir_to_uncles(%{"hash" => nephew_hash, "uncles" => [first | _] = uncles}) when is_map(first) do
     uncles
     |> Enum.with_index()
-    |> Enum.map(fn {uncle_hash, index} -> %{"workObject" => uncle_hash, "nephewHash" => nephew_hash, "index" => index} end)
+    |> Enum.map(fn {work_object, index} -> %{
+                                             "workObject" => work_object,
+                                             "number" => quantity_to_integer(Map.get(work_object, "number", nil)),
+                                             "nephewHash" => nephew_hash,
+                                             "index" => index
+                                           }
+    end)
   end
 
   @doc """

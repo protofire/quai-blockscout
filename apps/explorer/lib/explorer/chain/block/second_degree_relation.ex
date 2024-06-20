@@ -16,7 +16,7 @@ defmodule Explorer.Chain.Block.SecondDegreeRelation do
 
   alias Explorer.Chain.{Block, Hash}
 
-  @optional_fields ~w(uncle_fetched_at uncle_hash work_object)a
+  @optional_fields ~w(uncle_fetched_at uncle_hash work_object number)a
   @required_fields ~w(nephew_hash index)a
   @allowed_fields @optional_fields ++ @required_fields
 
@@ -35,6 +35,7 @@ defmodule Explorer.Chain.Block.SecondDegreeRelation do
     field(:uncle_fetched_at, :utc_datetime_usec)
     field(:index, :integer, null: true)
     field(:work_object, :map, null: true)
+    field(:number, :integer, null: true)
 
     belongs_to(:nephew, Block,
       foreign_key: :nephew_hash,

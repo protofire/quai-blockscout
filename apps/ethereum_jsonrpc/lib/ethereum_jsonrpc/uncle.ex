@@ -46,8 +46,8 @@ defmodule EthereumJSONRPC.Uncle do
   end
 
   @spec elixir_to_params(elixir) :: params
-  def elixir_to_params(%{"workObject" => work_object, "nephewHash" => nephew_hash, "index" => index})
+  def elixir_to_params(%{"workObject" => work_object, "number" => number, "nephewHash" => nephew_hash, "index" => index})
       when is_map(work_object) and is_binary(nephew_hash) and is_integer(index) do
-    %{nephew_hash: nephew_hash, work_object: work_object, index: index}
+    %{nephew_hash: nephew_hash, work_object: work_object, number: number, index: index}
   end
 end

@@ -264,7 +264,9 @@ defmodule Explorer.Chain.Block do
     )
   end
 
-  def block_type_filter(query, "Uncle"), do: where(query, [block], block.consensus == false)
+  def block_type_filter(query, "Uncle") do
+    where(query, [block], block.consensus == false)
+  end
 
   @doc """
   Returns query that fetches up to `limit` of consensus blocks

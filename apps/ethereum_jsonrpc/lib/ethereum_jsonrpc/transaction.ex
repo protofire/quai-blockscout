@@ -298,6 +298,14 @@ defmodule EthereumJSONRPC.Transaction do
       transaction_index: transaction_index,
       type: type,
       status: 1, # confirmed
+      # In case of UTXO transaction we can take index from Inputs data.
+      # Inputs.PreviousOutPoint.Index and set null if not exists
+      # inputs = [%{"PreviousOutPoint" => %{"Index" => 65535, "TxHash" => "0x000007e0095dd2787cba0a47a27585330cbeeb71d4eba231c8a29f07f9f90d70"}, "PubKey" => "BHcJYhLJnfopnqhcNfeqXzBwU41hWYxPL0181GL6UrL93BuZrTuIG/fkGMNJSmHaFPh7hV+Gi7bXzYwE+EpT4eQ="}]
+      # inputs can be null
+      index: inputs
+              |> Enum.at(0)
+              |> Map.get("PreviousOutPoint")
+              |> Map.get("Index", nil)
     }
   end
 
