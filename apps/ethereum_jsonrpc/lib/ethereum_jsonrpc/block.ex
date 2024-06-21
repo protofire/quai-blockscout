@@ -351,7 +351,6 @@ defmodule EthereumJSONRPC.Block do
            "gasUsed" => gas_used,
            "hash" => hash,
            "miner" => miner_hash,
-           "mixHash" => mix_hash,
            "receiptsRoot" => receipts_root,
            "sha3Uncles" => sha3_uncles,
            "size" => size,
@@ -361,6 +360,7 @@ defmodule EthereumJSONRPC.Block do
            "uncles" => uncles,
            "woHeader" => %{
              "time" => timestamp,
+             "mixHash" => mix_hash,
              "difficulty" => difficulty,
              "number" => number,
              "parentHash" => parent_hash,
