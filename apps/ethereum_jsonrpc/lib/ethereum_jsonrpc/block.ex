@@ -172,8 +172,7 @@ defmodule EthereumJSONRPC.Block do
         {:ok,
          block
          |> Map.merge(header)
-         |> map_keys()
-        }
+         |> map_keys()}
 
       _ ->
         {:ok, map_keys(block)}
@@ -350,7 +349,6 @@ defmodule EthereumJSONRPC.Block do
            "gasLimit" => gas_limit,
            "gasUsed" => gas_used,
            "hash" => hash,
-           "miner" => miner_hash,
            "receiptsRoot" => receipts_root,
            "sha3Uncles" => sha3_uncles,
            "size" => size,
@@ -364,7 +362,8 @@ defmodule EthereumJSONRPC.Block do
              "difficulty" => difficulty,
              "number" => number,
              "parentHash" => parent_hash,
-             "nonce" => nonce
+             "nonce" => nonce,
+             "coinbase" => miner_hash
            }
          } = _elixir
        ) do
@@ -677,7 +676,6 @@ defmodule EthereumJSONRPC.Block do
   @spec elixir_to_transactions_required_receipts(elixir) :: Transactions.elixir()
   def elixir_to_transactions_required_receipts(elixir) do
     Map.get(elixir, "transactions", [])
-    |> Enum.filter(fn tx -> Map.get(tx, "type", 0) != 2 end)
   end
 
   def elixir_to_transactions(_), do: []
@@ -762,12 +760,13 @@ defmodule EthereumJSONRPC.Block do
   def elixir_to_uncles(%{"hash" => nephew_hash, "uncles" => [first | _] = uncles}) when is_map(first) do
     uncles
     |> Enum.with_index()
-    |> Enum.map(fn {work_object, index} -> %{
-                                             "workObject" => work_object,
-                                             "number" => quantity_to_integer(Map.get(work_object, "number", nil)),
-                                             "nephewHash" => nephew_hash,
-                                             "index" => index
-                                           }
+    |> Enum.map(fn {work_object, index} ->
+      %{
+        "workObject" => work_object,
+        "number" => quantity_to_integer(Map.get(work_object, "number", nil)),
+        "nephewHash" => nephew_hash,
+        "index" => index
+      }
     end)
   end
 
@@ -943,10 +942,6 @@ defmodule EthereumJSONRPC.Block do
     {key, quantity_to_integer(quantity)}
   end
 
-  defp entry_to_elixir({key, quantity}) when key and is_list(quantity) do
-    {key, quantity |> Enum.map(&quantity_to_integer/1)}
-  end
-
   # Size and totalDifficulty may be `nil` for uncle blocks
   defp entry_to_elixir({key, nil}, _block) when key in ~w(size totalDifficulty) do
     {key, nil}
@@ -956,7 +951,7 @@ defmodule EthereumJSONRPC.Block do
   # `t:EthereumJSONRPC.address/0` and `t:EthereumJSONRPC.hash/0` pass through as `Explorer.Chain` can verify correct
   # hash format
   defp entry_to_elixir({key, _} = entry, _block)
-       when key in ~w(author extraData hash logsBloom miner mixHash parentHash receiptsRoot sealFields sha3Uncles signature stateRoot step transactionsRoot uncles withdrawalsRoot bitcoinMergedMiningHeader bitcoinMergedMiningCoinbaseTransaction bitcoinMergedMiningMerkleProof hashForMergedMining manifestHashFull numberFull parentHashFull extRollupRoot extTransactionsRoot subManifest location totalEntropy parentEntropy parentDeltaS parentEntropyFull parentDeltaSFull evmRoot utxoRoot etxSetRoot etxEligibleSlices primeTerminus interlinkRootHash interlinkHashes manifestHash parentUncledS parentUncledSubDeltaS),
+       when key in ~w(author extraData hash logsBloom miner mixHash parentHash receiptsRoot sealFields sha3Uncles signature stateRoot step transactionsRoot uncles withdrawalsRoot bitcoinMergedMiningHeader bitcoinMergedMiningCoinbaseTransaction bitcoinMergedMiningMerkleProof hashForMergedMining manifestHashFull numberFull parentHashFull extRollupRoot extTransactionsRoot subManifest location totalEntropy parentEntropy parentDeltaS parentEntropyFull parentDeltaSFull evmRoot utxoRoot etxSetRoot etxEligibleSlices primeTerminus interlinkRootHash interlinkHashes manifestHash parentUncledS parentUncledSubDeltaS coinbase),
        do: entry
 
   # QUAI Golden Age. This function will handled by entry_to_elixir that execute entry_to_elixir for each element of the list

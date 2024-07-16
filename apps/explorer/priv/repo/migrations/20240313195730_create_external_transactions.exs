@@ -23,13 +23,13 @@ defmodule Explorer.Repo.Migrations.CreateExternalTransactions do
       add(:input, :bytea, null: false)
 
       add(:nonce, :integer, null: false)
-      add(:r, :numeric, precision: 100, null: false)
-      add(:s, :numeric, precision: 100, null: false)
+      add(:r, :numeric, precision: 100, null: true)
+      add(:s, :numeric, precision: 100, null: true)
 
       # `null` when a pending transaction
       add(:status, :integer, null: true)
 
-      add(:v, :numeric, precision: 100, null: false)
+      add(:v, :numeric, precision: 100, null: true)
       add(:value, :numeric, precision: 100, null: false)
 
       timestamps(null: false, type: :utc_datetime_usec)

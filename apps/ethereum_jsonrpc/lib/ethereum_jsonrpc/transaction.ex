@@ -263,46 +263,123 @@ defmodule EthereumJSONRPC.Transaction do
     |> chain_type_fields(elixir)
   end
 
-  # QUAI UTXO transactions
+  @doc """
+  External Transactions
+  """
   def do_elixir_to_params(
         %{
-            "blockHash" => block_hash,
-            "blockNumber" => block_number,
-            "block_timestamp" => block_timestamp,
-            "chainId" => chain_id,
-            "gas" => gas,
-            "hash" => hash,
-            "input" => input,
-            "nonce" => nonce,
-            "inputs" => inputs,
-            "outputs" => outputs,
-            "transactionIndex" => transaction_index,
-            "type" => type,
-            "utxoSignature" => utxo_signature
-        } = transaction
+          "blockHash" => block_hash,
+          "blockNumber" => block_number,
+          "gas" => gas,
+          "hash" => hash,
+          "input" => input,
+          "nonce" => nonce,
+          "transactionIndex" => transaction_index,
+          "value" => value,
+          "etxIndex" => etx_index,
+          "from" => from,
+          "to" => to,
+          "type" => 1 = type
+        } = _transaction
       ) do
     %{
       block_hash: block_hash,
       block_number: block_number,
-      block_timestamp: block_timestamp,
+      gas: gas,
+      hash: hash,
+      input: input,
+      nonce: nonce,
+      index: transaction_index,
+      value: value,
+      etx_index: etx_index,
+      from_address_hash: from,
+      to_address_hash: to,
+      transaction_hash: hash,
+      type: type,
+      status: 1,
+      gas_price: 0,
+      gas_used: 0,
+      cumulative_gas_used: 0
+    }
+  end
+
+  def do_elixir_to_params(
+        %{
+          "blockHash" => block_hash,
+          "blockNumber" => block_number,
+          "gas" => gas,
+          "hash" => hash,
+          "input" => input,
+          "nonce" => nonce,
+          "transactionIndex" => transaction_index,
+          "value" => value,
+          "from" => from,
+          "to" => to,
+          "chainId" => chain_id,
+          "maxFeePerGas" => max_fee_per_gas,
+          "maxPriorityFeePerGas" => max_priority_fee_per_gas,
+          "v" => v,
+          "r" => r,
+          "s" => s,
+          "accessList" => access_list,
+          "type" => 0 = type
+        } = _transaction
+      ) do
+    %{
+      block_hash: block_hash,
+      block_number: block_number,
+      gas: gas,
+      hash: hash,
+      input: input,
+      nonce: nonce,
+      index: transaction_index,
+      value: value,
+      from_address_hash: from,
+      to_address_hash: to,
       chain_id: chain_id,
+      max_fee_per_gas: max_fee_per_gas,
+      max_priority_fee_per_gas: max_priority_fee_per_gas,
+      v: v,
+      r: r,
+      s: s,
+      access_list: access_list,
+      type: type,
+      gas_price: 0,
+      gas_used: 0,
+      status: 1
+    }
+  end
+
+  # TODO: UTXO Transactions
+  def do_elixir_to_params(%{"type" => 2} = _transaction), do: %{}
+
+  # Default method, but none transaction should go through here
+  def do_elixir_to_params(
+        %{
+          "blockHash" => block_hash,
+          "blockNumber" => block_number,
+          "gas" => gas,
+          "hash" => hash,
+          "input" => input,
+          "nonce" => nonce,
+          "transactionIndex" => transaction_index,
+          "type" => type,
+          "value" => value
+        } = _transaction
+      ) do
+    %{
+      block_hash: block_hash,
+      block_number: block_number,
       gas: gas,
       gas_price: 0,
       gas_used: 0,
       hash: hash,
       input: input,
       nonce: nonce,
-      inputs: inputs,
-      outputs: outputs,
-      utxo_signature: utxo_signature,
-      transaction_index: transaction_index,
+      index: transaction_index,
       type: type,
-      status: 1, # confirmed
-      # In case of UTXO transaction we can take index from Inputs data.
-      # Inputs.PreviousOutPoint.Index and set null if not exists
-      # inputs = [%{"PreviousOutPoint" => %{"Index" => 65535, "TxHash" => "0x000007e0095dd2787cba0a47a27585330cbeeb71d4eba231c8a29f07f9f90d70"}, "PubKey" => "BHcJYhLJnfopnqhcNfeqXzBwU41hWYxPL0181GL6UrL93BuZrTuIG/fkGMNJSmHaFPh7hV+Gi7bXzYwE+EpT4eQ="}]
-      # inputs can be null
-      # index: 0
+      value: value,
+      status: 1
     }
   end
 
@@ -568,11 +645,6 @@ defmodule EthereumJSONRPC.Transaction do
     case Application.get_env(:explorer, :chain_type) do
       "quai" ->
         params
-        |> Map.merge(%{
-          inputs: Map.get(elixir, "inputs"),
-          ouputs: Map.get(elixir, "outputs"),
-          utxoSignature: Map.get(elixir, "utxoSignature")
-        })
 
       "ethereum" ->
         put_if_present(elixir, params, [
@@ -727,7 +799,7 @@ defmodule EthereumJSONRPC.Transaction do
   #
   # "txType": to avoid FunctionClauseError when indexing Wanchain
   defp entry_to_elixir({key, value})
-       when key in ~w(blockHash condition creates from hash input jsonrpc publicKey raw to txType executionNode requestRecord blobVersionedHashes inputs outputs utxoSignature),
+       when key in ~w(blockHash condition creates from hash input jsonrpc publicKey raw to txType executionNode requestRecord blobVersionedHashes etxIndex originatingTxHash accessList),
        do: {key, value}
 
   # specific to Nethermind client
@@ -735,7 +807,7 @@ defmodule EthereumJSONRPC.Transaction do
     do: {"input", value}
 
   # specific to QUAI client
-  defp entry_to_elixir({"from", _value} = tuple, %{"type" => "0x1", "sender" => sender}) do
+  defp entry_to_elixir({"sender", _value} = tuple, %{"type" => "0x1", "sender" => sender}) do
     {"from", sender}
   end
 

@@ -57,12 +57,12 @@ defmodule Explorer.Chain.ExternalTransaction do
           index: transaction_index | nil,
           input: Data.t(),
           nonce: non_neg_integer(),
-          r: r(),
-          s: s(),
+          r: r() | nil,
+          s: s() | nil,
           status: Status.t() | nil,
           to_address: %Ecto.Association.NotLoaded{} | Address.t() | nil,
           to_address_hash: Hash.Address.t() | nil,
-          v: v(),
+          v: v() | nil,
           value: Wei.t(),
           revert_reason: String.t() | nil,
           max_priority_fee_per_gas: wei_per_gas | nil,
@@ -405,7 +405,6 @@ defmodule Explorer.Chain.ExternalTransaction do
       attrs,
       ~w(block_hash block_number from_address_hash gas gas_price max_fee_per_gas max_priority_fee_per_gas hash input nonce to_address_hash index value type v r s)a
     )
-    |> validate_required(~w()a)
     |> validate_block_required(attrs)
   end
 

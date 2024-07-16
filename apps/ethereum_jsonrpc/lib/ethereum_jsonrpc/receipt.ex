@@ -381,6 +381,10 @@ defmodule EthereumJSONRPC.Receipt do
     {:ok, {key, transformed_etxs}}
   end
 
+  defp entry_to_elixir({"etxs" = key, etxs_list}) when is_nil(etxs_list) do
+    {:ok, {key, nil}}
+  end
+
   # Helper function to transform etxs
   defp transform_etxs(etxs_map) when is_map(etxs_map) do
     etxs_map
