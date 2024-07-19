@@ -15,7 +15,6 @@ defmodule Explorer.Repo.Migrations.UpdateParentEntropyAndDeltaS do
       add(:interlink_root_hash, :bytea)
       add(:uncled_s, {:array, :bytea})
       add(:interlink_hashes, {:array, :bytea})
-      add(:wo_body, :map)
       add(:wo_header, :map)
     end
   end

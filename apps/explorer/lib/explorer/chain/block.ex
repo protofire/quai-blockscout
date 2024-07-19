@@ -38,7 +38,6 @@ defmodule Explorer.Chain.Block.Schema do
                               field(:interlink_root_hash, Hash.Full)
                               field(:uncled_s, {:array, :binary})
                               field(:interlink_hashes, {:array, Hash.Full})
-                              field(:wo_body, :map)
                               field(:wo_header, :map)
                             end,
                             2
@@ -145,7 +144,7 @@ defmodule Explorer.Chain.Block do
                   |> (&(case Application.compile_env(:explorer, :chain_type) do
                           "quai" ->
                             &1 ++
-                              ~w(manifest_hash_full number_full parent_hash_full ext_rollup_root transactions_root ext_transactions_root sub_manifest location is_prime_coincident is_region_coincident total_entropy parent_entropy parent_delta_s parent_entropy_full parent_delta_s_full evm_root utxo_root etx_set_root parent_uncled_sub_delta_s efficiency_score threshold_count expansion_number etx_eligible_slices prime_terminus interlink_root_hash uncled_s interlink_hashes wo_body wo_header)a
+                              ~w(manifest_hash_full number_full parent_hash_full ext_rollup_root transactions_root ext_transactions_root sub_manifest location is_prime_coincident is_region_coincident total_entropy parent_entropy parent_delta_s parent_entropy_full parent_delta_s_full evm_root utxo_root etx_set_root parent_uncled_sub_delta_s efficiency_score threshold_count expansion_number etx_eligible_slices prime_terminus interlink_root_hash uncled_s interlink_hashes wo_header)a
 
                           "rsk" ->
                             &1 ++

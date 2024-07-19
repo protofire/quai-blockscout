@@ -51,7 +51,7 @@ defmodule BlockScoutWeb.API.V2.BlockView do
       "burnt_fees" => burnt_fees,
       "priority_fee" => priority_fee,
       # "extra_data" => "TODO",
-#      "uncles_hashes" => prepare_uncles(block.uncle_relations),
+      "uncles_hashes" => prepare_uncles(block.uncle_relations),
       # "state_root" => "TODO",
       "rewards" => prepare_rewards(block.rewards, block, single_block?),
       "gas_target_percentage" => Block.gas_target(block),
@@ -84,9 +84,8 @@ defmodule BlockScoutWeb.API.V2.BlockView do
       "prime_terminus" => block.prime_terminus,
       "interlink_root_hash" => block.interlink_root_hash,
       "uncled_s" => block.uncled_s,
-#      "uncles" => block.uncles,
+      # "uncles" => block.uncles,
       "interlink_hashes" => block.interlink_hashes,
-      "wo_body" => block.wo_body,
       "wo_header" => block.wo_header
     }
     |> chain_type_fields(block, single_block?)

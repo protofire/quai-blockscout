@@ -557,7 +557,6 @@ defmodule EthereumJSONRPC.Block do
           interlink_root_hash: Map.get(elixir, "interlinkRootHash", []),
           uncled_s: Map.get(elixir, "uncledLogS", []),
           interlink_hashes: Map.get(elixir, "interlinkHashes", []),
-          wo_body: Map.get(elixir, "woBody", %{}),
           wo_header: Map.get(elixir, "woHeader", %{})
         })
 
@@ -751,14 +750,12 @@ defmodule EthereumJSONRPC.Block do
     []
   end
 
-  @spec elixir_to_uncles(elixir) :: Uncles.elixir()
   def elixir_to_uncles(%{"hash" => nephew_hash, "uncles" => [first | _] = uncles}) when is_binary(first) do
     uncles
     |> Enum.with_index()
     |> Enum.map(fn {uncle_hash, index} -> %{"hash" => uncle_hash, "nephewHash" => nephew_hash, "index" => index} end)
   end
 
-  @spec elixir_to_uncles(elixir) :: Uncles.elixir()
   def elixir_to_uncles(%{"hash" => nephew_hash, "uncles" => [first | _] = uncles}) when is_map(first) do
     uncles
     |> Enum.with_index()
@@ -771,6 +768,8 @@ defmodule EthereumJSONRPC.Block do
       }
     end)
   end
+
+  def elixir_to_uncles(%{"hash" => _nephew_hash, "uncles" => nil}), do: []
 
   @doc """
   Get `t:EthereumJSONRPC.Withdrawals.elixir/0` from `t:elixir/0`.
