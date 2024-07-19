@@ -168,10 +168,12 @@ defmodule EthereumJSONRPC.Block do
     true = Map.has_key?(id_to_params, id)
 
     case block do
-      %{"woBody" => %{"header" => header}} ->
+      %{"header" => header} ->
         {:ok,
          block
-         |> Map.merge(header)
+         # Hash inside of the header is different from the root.
+         # deleting it for now until it's clear why this is happenning.
+         |> Map.merge(Map.delete(header, "hash"))
          |> map_keys()}
 
       _ ->
@@ -987,8 +989,6 @@ defmodule EthereumJSONRPC.Block do
   end
 
   # Quai Golden Age
-  defp entry_to_elixir({"woBody", woBody} = entry, _block) when is_map(woBody), do: entry
-
   defp entry_to_elixir({"woHeader", woHeader}, _block) when is_map(woHeader) do
     {"woHeader", Enum.into(woHeader, %{}, &entry_to_elixir(&1, woHeader))}
   end
