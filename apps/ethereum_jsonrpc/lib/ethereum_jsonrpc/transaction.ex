@@ -353,7 +353,7 @@ defmodule EthereumJSONRPC.Transaction do
   # TODO: UTXO Transactions
   def do_elixir_to_params(%{"type" => 2} = _transaction), do: %{}
 
-  # Default method, but none transaction should go through here
+  # Default method, but no transaction should go through here
   def do_elixir_to_params(
         %{
           "blockHash" => block_hash,
@@ -364,22 +364,24 @@ defmodule EthereumJSONRPC.Transaction do
           "nonce" => nonce,
           "transactionIndex" => transaction_index,
           "type" => type,
-          "value" => value
+          "value" => value,
+          "from" => from
         } = _transaction
       ) do
     %{
       block_hash: block_hash,
       block_number: block_number,
       gas: gas,
-      gas_price: 0,
-      gas_used: 0,
       hash: hash,
       input: input,
       nonce: nonce,
       index: transaction_index,
       type: type,
       value: value,
-      status: 1
+      from_address_hash: from,
+      status: nil,
+      gas_price: 0,
+      gas_used: 0
     }
   end
 

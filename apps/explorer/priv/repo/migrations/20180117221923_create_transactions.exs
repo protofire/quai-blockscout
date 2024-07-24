@@ -165,13 +165,16 @@ defmodule Explorer.Repo.Migrations.CreateTransactions do
       )
     )
 
-    create(
-      constraint(
-        :transactions,
-        :pending_gas_used,
-        check: "block_hash IS NOT NULL OR gas_used IS NULL"
-      )
-    )
+    # Pending transactions on QUAI have gas_used information, removing for now until it's clear why this happens
+    # My guess it is related to the ordering of the transctions, where a transaction can be mined, but not included since it needs to be ordered in.
+    #
+    # create(
+    #   constraint(
+    #     :transactions,
+    #     :pending_gas_used,
+    #     check: "block_hash IS NOT NULL OR gas_used IS NULL"
+    #   )
+    # )
 
     create(
       constraint(
