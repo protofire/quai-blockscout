@@ -65,7 +65,8 @@ defmodule Explorer.Chain do
     TokenTransfer,
     Transaction,
     Wei,
-    Withdrawal
+    Withdrawal,
+    ExtTransaction
   }
 
   alias Explorer.Chain.Cache.{
@@ -2748,7 +2749,10 @@ defmodule Explorer.Chain do
       ) do
     paging_options
     |> Transaction.fetch_transactions()
-    |> where([transaction], not is_nil(transaction.block_number) and not is_nil(transaction.index))
+    |> where(
+      [transaction],
+      not is_nil(transaction.block_number) and not is_nil(transaction.index) and transaction.status != :completed
+    )
     |> apply_filter_by_method_id_to_transactions(method_id_filter)
     |> apply_filter_by_tx_type_to_transactions(type_filter)
     |> join_associations(necessity_by_association)
@@ -3115,6 +3119,7 @@ defmodule Explorer.Chain do
   def transaction_to_status(%Transaction{block_hash: nil, status: nil}), do: :pending
   def transaction_to_status(%Transaction{status: nil}), do: :awaiting_internal_transactions
   def transaction_to_status(%Transaction{status: :ok}), do: :success
+  def transaction_to_status(%Transaction{status: :completed}), do: :success
 
   def transaction_to_status(%Transaction{status: :error, error: nil}),
     do: {:error, :awaiting_internal_transactions}
@@ -3739,7 +3744,6 @@ defmodule Explorer.Chain do
           initial :: accumulator,
           reducer :: (entry :: map(), accumulator -> accumulator)
         ) :: {:ok, accumulator}
-
         when accumulator: term()
   def stream_token_instances_with_unfetched_metadata(initial, reducer) when is_function(reducer, 2) do
     Instance

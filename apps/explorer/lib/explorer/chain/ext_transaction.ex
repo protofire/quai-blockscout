@@ -29,6 +29,7 @@ defmodule Explorer.Chain.ExtTransaction do
     field(:status, Ecto.Enum, values: [:pending, :completed])
     field(:value, Wei) :: Wei.t() | nil
     field(:etx_type, :string)
+    field(:parent_block_hash, Hash.Full)
 
     belongs_to(
       :to_address,
@@ -47,7 +48,6 @@ defmodule Explorer.Chain.ExtTransaction do
     )
 
     belongs_to(:block, Block, foreign_key: :block_hash, references: :hash, type: Hash.Full)
-    belongs_to(:parent_block, Block, foreign_key: :parent_block_hash, references: :hash, type: Hash.Full)
 
     timestamps()
   end

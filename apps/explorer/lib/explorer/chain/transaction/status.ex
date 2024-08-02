@@ -51,8 +51,10 @@ defmodule Explorer.Chain.Transaction.Status do
   def cast(:ok), do: {:ok, :ok}
   def cast(0), do: {:ok, :error}
   def cast(1), do: {:ok, :ok}
+  def cast(2), do: {:ok, :completed}
   def cast("0x0"), do: {:ok, :error}
   def cast("0x1"), do: {:ok, :ok}
+  def cast("0x2"), do: {:ok, :completed}
   def cast(_), do: :error
 
   @doc """
@@ -79,6 +81,7 @@ defmodule Explorer.Chain.Transaction.Status do
   @spec dump(term()) :: {:ok, 0 | 1} | :error
   def dump(:error), do: {:ok, 0}
   def dump(:ok), do: {:ok, 1}
+  def dump(:completed), do: {:ok, 2}
   def dump(_), do: :error
 
   @doc """
@@ -98,6 +101,7 @@ defmodule Explorer.Chain.Transaction.Status do
   @spec load(term()) :: {:ok, t()} | :error
   def load(0), do: {:ok, :error}
   def load(1), do: {:ok, :ok}
+  def load(2), do: {:ok, :completed}
   def load(_), do: :error
 
   @doc """

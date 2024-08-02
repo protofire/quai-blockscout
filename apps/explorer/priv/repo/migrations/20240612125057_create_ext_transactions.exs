@@ -13,10 +13,10 @@ defmodule Explorer.Repo.Migrations.CreateEtxTransactions do
       add(:value, :numeric, precision: 100, null: false)
       add(:sender_address_hash, :bytea, null: false)
       add(:to_address_hash, :bytea, null: false)
+      add(:parent_block_hash, :bytea, null: false)
       add(:etx_type, :string, null: false)
 
       add(:block_hash, references(:blocks, column: :hash, type: :bytea), null: false)
-      add(:parent_block_hash, references(:blocks, column: :hash, type: :bytea, validate: false), null: false)
 
       timestamps(null: false, type: :utc_datetime_usec)
     end
