@@ -24,7 +24,7 @@ defmodule Explorer.Chain.Import.Runner.ExternalTransactions do
   def ecto_schema_module, do: ExternalTransaction
 
   @impl Import.Runner
-  def option_key, do: :ext_transactions
+  def option_key, do: :external_transactions
 
   @impl Import.Runner
   def imported_table_row do

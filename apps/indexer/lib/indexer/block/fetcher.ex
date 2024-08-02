@@ -72,7 +72,6 @@ defmodule Indexer.Block.Fetcher do
                 block_second_degree_relations: Import.Runner.options(),
                 block_rewards: Import.Runner.options(),
                 broadcast: term(),
-                ext_transactions: Import.Runner.options(),
                 logs: Import.Runner.options(),
                 token_transfers: Import.Runner.options(),
                 tokens: Import.Runner.options(),

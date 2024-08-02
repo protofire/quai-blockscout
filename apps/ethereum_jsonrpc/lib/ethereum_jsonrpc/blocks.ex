@@ -4,7 +4,7 @@ defmodule EthereumJSONRPC.Blocks do
   and [`eth_getBlockByNumber`](https://github.com/ethereum/wiki/wiki/JSON-RPC#eth_getblockbynumber) from batch requests.
   """
 
-  alias EthereumJSONRPC.{Block, Transactions, Transport, Uncles, Withdrawals}
+  alias EthereumJSONRPC.{Block, Transactions, ExtTransactions, Transport, Uncles, Withdrawals}
 
   @type elixir :: [Block.elixir()]
   @type params :: [Block.params()]
@@ -59,7 +59,7 @@ defmodule EthereumJSONRPC.Blocks do
     block_second_degree_relations_params = Uncles.elixir_to_params(elixir_uncles)
     utxo_transactions_params = Transactions.elixir_to_params(elixir_utxo_transactions)
     transactions_required_receipts_params = Transactions.elixir_to_params(elixir_transactions_required_receipts)
-    ext_transactions_params = Transactions.elixir_to_params(elixir_ext_transactions)
+    ext_transactions_params = ExtTransactions.elixir_to_params(elixir_ext_transactions)
     withdrawals_params = Withdrawals.elixir_to_params(elixir_withdrawals)
     blocks_params = elixir_to_params(elixir_blocks)
 
@@ -240,11 +240,6 @@ defmodule EthereumJSONRPC.Blocks do
     Enum.flat_map(elixir, fn transaction ->
       transaction
       |> Block.elixir_to_ext_transactions()
-      |> Enum.map(fn etx -> Map.put(etx, "gasUsed", 0) end)
-      |> Enum.map(fn etx -> Map.put(etx, "cumulativeGasUsed", 0) end)
-      # |> Enum.map(fn etx -> Map.put(etx, "created_contract_address", "0x0000000000000000000000000000000000000000") end)
-      |> Enum.map(fn etx -> Map.put(etx, "status", :ok) end)
-      |> Enum.map(fn etx -> Map.put(etx, "transaction_hash", transaction["hash"]) end)
     end)
   end
 

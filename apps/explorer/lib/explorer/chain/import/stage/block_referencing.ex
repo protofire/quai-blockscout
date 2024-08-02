@@ -59,7 +59,7 @@ defmodule Explorer.Chain.Import.Stage.BlockReferencing do
   ]
 
   @quai_runners [
-    Runner.ExternalTransactions
+    Runner.ExtTransactions
   ]
 
   @impl Stage

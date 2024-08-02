@@ -7,7 +7,7 @@ defmodule EthereumJSONRPC.Block do
   @quai_attrs ~w(manifestHash number parentHash parentEntropy parentDeltaS)a
   import EthereumJSONRPC, only: [quantity_to_integer: 1, timestamp_to_datetime: 1]
 
-  alias EthereumJSONRPC.{Transactions, Uncles, Withdrawals}
+  alias EthereumJSONRPC.{ExtTransactions, Transactions, Uncles, Withdrawals}
 
   def map_keys(object) do
     # Use Enum.reduce to iterate over the key-value pairs in the object
@@ -37,7 +37,6 @@ defmodule EthereumJSONRPC.Block do
                            do: [
                              total_difficulty: non_neg_integer(),
                              ext_rollup_root: EthereumJSONRPC.hash(),
-                             ext_transactions: [EthereumJSONRPC.hash()],
                              ext_transactions_root: EthereumJSONRPC.hash(),
                              location: [EthereumJSONRPC.data()],
                              manifest_hash: EthereumJSONRPC.hash(),
@@ -681,8 +680,9 @@ defmodule EthereumJSONRPC.Block do
 
   def elixir_to_transactions(_), do: []
 
-  @spec elixir_to_ext_transactions(elixir) :: Transactions.elixir()
+  @spec elixir_to_ext_transactions(elixir) :: ExtTransactions.elixir()
   def elixir_to_ext_transactions(%{"extTransactions" => extTransactions}), do: extTransactions
+  def elixir_to_ext_transactions(_), do: []
 
   @spec elixir_to_utxo_transactions(elixir) :: Transactions.elixir()
   def elixir_to_utxo_transactions(elixir) do
@@ -699,8 +699,6 @@ defmodule EthereumJSONRPC.Block do
     # Add status 1 for all UTXO transactions
     |> Enum.map(fn tx -> Map.put(tx, "status", 1) end)
   end
-
-  def elixir_to_ext_transactions(_), do: []
 
   @doc """
   Get `t:EthereumJSONRPC.Uncles.elixir/0` from `t:elixir/0`.
@@ -970,7 +968,7 @@ defmodule EthereumJSONRPC.Block do
   end
 
   defp entry_to_elixir({"extTransactions" = key, extTransactions}, _block) do
-    {key, Transactions.ext_to_elixir(extTransactions)}
+    {key, ExtTransactions.to_elixir(extTransactions)}
   end
 
   defp entry_to_elixir({"withdrawals" = key, nil}, _block) do

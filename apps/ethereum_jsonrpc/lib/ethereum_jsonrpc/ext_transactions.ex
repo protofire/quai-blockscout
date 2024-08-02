@@ -9,9 +9,9 @@ defmodule EthereumJSONRPC.ExtTransactions do
     Enum.map(elixir, &ExtTransaction.elixir_to_params/1)
   end
 
-  def to_elixir(ext_transactions, block_timestamp \\ nil) when is_list(ext_transactions) do
+  def to_elixir(ext_transactions) when is_list(ext_transactions) do
     ext_transactions
-    |> Enum.map(&ExtTransaction.to_elixir(&1, block_timestamp))
+    |> Enum.map(&ExtTransaction.to_elixir(&1))
     |> Enum.filter(&(!is_nil(&1)))
   end
 end

@@ -4,6 +4,7 @@ defmodule EthereumJSONRPC.ExtTransaction do
   import EthereumJSONRPC, only: [quantity_to_integer: 1, integer_to_quantity: 1, request: 1]
 
   alias EthereumJSONRPC
+  alias Explorer.Chain.ExtTransaction
 
   @type elixir :: %{
           String.t() => EthereumJSONRPC.address() | EthereumJSONRPC.hash() | String.t() | non_neg_integer() | nil
@@ -49,6 +50,7 @@ defmodule EthereumJSONRPC.ExtTransaction do
       ) do
     %{
       block_hash: block_hash,
+      parent_block_hash: parent_block_hash,
       block_number: block_number,
       gas: gas,
       hash: hash,
@@ -61,7 +63,30 @@ defmodule EthereumJSONRPC.ExtTransaction do
       sender_address_hash: sender,
       transaction_hash: hash,
       type: type,
-      status: "pending"
+      status: ExtTransaction.get_pending_status()
     }
+  end
+
+  def to_elixir(ext_transaction) when is_map(ext_transaction) do
+    Enum.into(ext_transaction, %{}, fn {key, value} -> entry_to_elixir({key, value}) end)
+  end
+
+  def to_elixir(_), do: nil
+
+  defp entry_to_elixir({key, value})
+       when key in ~w(blockHash sender hash input to etxType originatingTxHash type),
+       do: {key, value}
+
+  defp entry_to_elixir({key, quantity})
+       when key in ~w(gas nonce value etxIndex blockNumber) and
+              quantity != nil do
+    {key, quantity_to_integer(quantity)}
+  end
+
+  @doc """
+  Fields ignored for now: [accessList, transactionIndex]
+  """
+  defp entry_to_elixir(_) do
+    {nil, nil}
   end
 end
