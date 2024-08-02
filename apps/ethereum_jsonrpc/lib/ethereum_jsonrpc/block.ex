@@ -171,8 +171,8 @@ defmodule EthereumJSONRPC.Block do
       %{"header" => header} ->
         {:ok,
          block
-         # Hash inside of the header is different from the root.
-         # deleting it for now until it's clear why this is happenning.
+         # Hash inside of the header is a "salt" to avoid colision of the actual block hash
+         # Deleting it.
          |> Map.merge(Map.delete(header, "hash"))
          |> map_keys()}
 
