@@ -142,7 +142,7 @@ defmodule Indexer.Block.Fetcher do
              blocks_params: blocks_params,
              transactions_params: transactions_params_without_receipts,
              utxo_transactions_params: utxo_transactions,
-             ext_transactions_params: ext_transactions,
+             #  ext_transactions_params: ext_transactions,
              withdrawals_params: withdrawals_params,
              block_second_degree_relations_params: block_second_degree_relations_params,
              errors: blocks_errors
@@ -227,7 +227,7 @@ defmodule Indexer.Block.Fetcher do
            polygon_edge_deposit_executes: polygon_edge_deposit_executes,
            polygon_zkevm_bridge_operations: polygon_zkevm_bridge_operations,
            shibarium_bridge_operations: shibarium_bridge_operations,
-           ext_transactions: ext_transactions,
+           #  ext_transactions: ext_transactions,
            utxo_transactions: utxo_transactions
          },
          {:ok, inserted} <-
@@ -263,13 +263,13 @@ defmodule Indexer.Block.Fetcher do
          polygon_edge_deposit_executes: polygon_edge_deposit_executes,
          polygon_zkevm_bridge_operations: polygon_zkevm_bridge_operations,
          shibarium_bridge_operations: shibarium_bridge_operations,
-         ext_transactions: ext_transactions,
+         #  ext_transactions: ext_transactions,
          utxo_transactions: utxo_transactions
        }) do
     case Application.get_env(:explorer, :chain_type) do
       "quai" ->
         basic_import_options
-        |> Map.put_new(:ext_transactions, %{params: ext_transactions})
+        # |> Map.put_new(:ext_transactions, %{params: ext_transactions})
         |> Map.put(:transactions, %{params: transactions_with_receipts ++ utxo_transactions})
 
       "ethereum" ->
