@@ -26,6 +26,15 @@ defmodule Explorer.Chain.Transaction.Schema do
                               field(:inputs, {:array, :map})
                               field(:outputs, {:array, :map})
                               field(:utxo_signature, Data)
+                              field(:is_etx, :boolean, default: false)
+                              field(:etx_index, :integer, default: nil)
+
+                              field(:etx_type, Ecto.Enum,
+                                values: [coinbase: 1, conversion: 2, external: 3],
+                                default: nil
+                              )
+
+                              field(:originating_tx_hash, Hash.Full, default: nil)
                             end,
                             2
                           )
@@ -246,7 +255,7 @@ defmodule Explorer.Chain.Transaction do
 
   @optional_attrs ~w(max_priority_fee_per_gas max_fee_per_gas block_hash block_number block_consensus block_timestamp created_contract_address_hash cumulative_gas_used earliest_processing_start
                      error gas_price gas_used index created_contract_code_indexed_at status
-                     to_address_hash revert_reason type has_error_in_internal_txs r s v from_address_hash to_address_hash)a
+                     to_address_hash revert_reason type has_error_in_internal_txs r s v from_address_hash to_address_hash is_etx etx_index etx_type originating_tx_hash)a
 
   @optimism_optional_attrs ~w(l1_fee l1_fee_scalar l1_gas_price l1_gas_used l1_tx_origin l1_block_number)a
   @suave_optional_attrs ~w(execution_node_hash wrapped_type wrapped_nonce wrapped_to_address_hash wrapped_gas wrapped_gas_price wrapped_max_priority_fee_per_gas wrapped_max_fee_per_gas wrapped_value wrapped_input wrapped_v wrapped_r wrapped_s wrapped_hash)a

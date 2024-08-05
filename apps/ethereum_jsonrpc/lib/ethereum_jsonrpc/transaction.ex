@@ -801,7 +801,7 @@ defmodule EthereumJSONRPC.Transaction do
   #
   # "txType": to avoid FunctionClauseError when indexing Wanchain
   defp entry_to_elixir({key, value})
-       when key in ~w(blockHash condition creates from hash input jsonrpc publicKey raw to txType executionNode requestRecord blobVersionedHashes etxIndex originatingTxHash accessList),
+       when key in ~w(blockHash condition creates from hash input jsonrpc publicKey raw to txType executionNode requestRecord blobVersionedHashes originatingTxHash accessList etxType),
        do: {key, value}
 
   # specific to Nethermind client
@@ -818,7 +818,7 @@ defmodule EthereumJSONRPC.Transaction do
   end
 
   defp entry_to_elixir({key, quantity})
-       when key in ~w(gas gasPrice nonce r s standardV v value type maxPriorityFeePerGas maxFeePerGas maxFeePerBlobGas) and
+       when key in ~w(gas gasPrice nonce r s standardV v value type maxPriorityFeePerGas maxFeePerGas maxFeePerBlobGas etxIndex) and
               quantity != nil do
     {key, quantity_to_integer(quantity)}
   end
