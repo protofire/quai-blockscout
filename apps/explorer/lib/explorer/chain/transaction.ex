@@ -1154,7 +1154,7 @@ defmodule Explorer.Chain.Transaction do
   def transactions_with_block_number(block_number) do
     from(
       t in Transaction,
-      where: t.block_number == ^block_number
+      where: t.block_number == ^block_number and t.is_etx == false and is_nil(t.etx_type)
     )
   end
 

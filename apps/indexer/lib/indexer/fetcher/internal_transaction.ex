@@ -241,8 +241,14 @@ defmodule Indexer.Fetcher.InternalTransaction do
   @zetachain_non_traceable_type 88
   defp filter_non_traceable_transactions(transactions) do
     case Application.get_env(:explorer, :chain_type) do
-      "zetachain" -> Enum.reject(transactions, &(&1.type == @zetachain_non_traceable_type))
-      _ -> transactions
+      "zetachain" ->
+        Enum.reject(transactions, &(&1.type == @zetachain_non_traceable_type))
+
+      "quai" ->
+        Enum.reject(transactions, &(Map.get(&1, :etx_type, nil) != nil))
+
+      _ ->
+        transactions
     end
   end
 
