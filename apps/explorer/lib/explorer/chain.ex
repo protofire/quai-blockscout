@@ -3052,48 +3052,6 @@ defmodule Explorer.Chain do
   end
 
   @doc """
-  Converts `external_transaction` to the status of the `t:Explorer.Chain.ExternalTransaction.t/0` whether pending or collated.
-
-  ## Returns
-
-    * `:pending` - the transaction has not be confirmed in a block yet.
-    * `:awaiting_internal_transactions` - the transaction happened in a pre-Byzantium block or on a chain like Ethereum
-      Classic (ETC) that never adopted [EIP-658](https://github.com/Arachnid/EIPs/blob/master/EIPS/eip-658.md), which
-      add transaction status to transaction receipts, so the status can only be derived whether the first internal
-      transaction has an error.
-    * `:success` - the transaction has been confirmed in a block
-    * `{:error, :awaiting_internal_transactions}` - the transactions happened post-Byzantium, but the error message
-       requires the internal transactions.
-    * `{:error, reason}` - the transaction failed due to `reason` in its first internal transaction.
-
-  """
-  @spec transaction_to_status(ExternalTransaction.t()) ::
-          :pending
-          | :success
-          | {:error, :awaiting_internal_transactions}
-          | {:error, reason :: String.t()}
-  def transaction_to_status(%ExternalTransaction{error: "dropped/replaced"}), do: {:error, "dropped/replaced"}
-  def transaction_to_status(%ExternalTransaction{block_hash: nil, status: nil}), do: :pending
-  def transaction_to_status(%ExternalTransaction{status: nil}), do: :success
-  def transaction_to_status(%ExternalTransaction{status: :ok}), do: :success
-
-  def transaction_to_status(%ExternalTransaction{status: :error, error: nil}),
-    do: {:error, :awaiting_internal_transactions}
-
-  def transaction_to_status(%ExternalTransaction{status: :error, error: error}) when is_binary(error),
-    do: {:error, error}
-
-  # def transaction_to_revert_reason(transaction) do
-  #   %ExternalTransaction{revert_reason: revert_reason} = transaction
-
-  #   if revert_reason == nil do
-  #     fetch_tx_revert_reason(transaction)
-  #   else
-  #     revert_reason
-  #   end
-  # end
-
-  @doc """
   Converts `transaction` to the status of the `t:Explorer.Chain.Transaction.t/0` whether pending or collated.
 
   ## Returns
@@ -3116,6 +3074,8 @@ defmodule Explorer.Chain do
           | {:error, :awaiting_internal_transactions}
           | {:error, reason :: String.t()}
   def transaction_to_status(%Transaction{error: "dropped/replaced"}), do: {:error, "dropped/replaced"}
+  def transaction_to_status(%Transaction{is_etx: true}), do: :pending
+  def transaction_to_status(%Transaction{is_etx: false}), do: :success
   def transaction_to_status(%Transaction{block_hash: nil, status: nil}), do: :pending
   def transaction_to_status(%Transaction{status: nil}), do: :awaiting_internal_transactions
   def transaction_to_status(%Transaction{status: :ok}), do: :success

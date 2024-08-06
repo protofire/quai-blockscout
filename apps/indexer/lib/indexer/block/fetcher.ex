@@ -140,9 +140,8 @@ defmodule Indexer.Block.Fetcher do
           {:ok,
            %Blocks{
              blocks_params: blocks_params,
-             transactions_params: transactions_params_without_receipts,
-             utxo_transactions_params: utxo_transactions,
-             ext_transactions_params: ext_transactions,
+             transactions_without_receipts_params: transactions_params_without_receipts,
+             transactions_params: transactions_params,
              withdrawals_params: withdrawals_params,
              block_second_degree_relations_params: block_second_degree_relations_params,
              errors: blocks_errors
@@ -222,13 +221,12 @@ defmodule Indexer.Block.Fetcher do
          },
          chain_type_import_options = %{
            transactions_with_receipts: transactions_with_receipts,
+           transactions_params: transactions_params,
            optimism_withdrawals: optimism_withdrawals,
            polygon_edge_withdrawals: polygon_edge_withdrawals,
            polygon_edge_deposit_executes: polygon_edge_deposit_executes,
            polygon_zkevm_bridge_operations: polygon_zkevm_bridge_operations,
-           shibarium_bridge_operations: shibarium_bridge_operations,
-           ext_transactions: ext_transactions,
-           utxo_transactions: utxo_transactions
+           shibarium_bridge_operations: shibarium_bridge_operations
          },
          {:ok, inserted} <-
            __MODULE__.import(
@@ -258,19 +256,17 @@ defmodule Indexer.Block.Fetcher do
 
   defp import_options(basic_import_options, %{
          transactions_with_receipts: transactions_with_receipts,
+         transactions_params: transactions_params,
          optimism_withdrawals: optimism_withdrawals,
          polygon_edge_withdrawals: polygon_edge_withdrawals,
          polygon_edge_deposit_executes: polygon_edge_deposit_executes,
          polygon_zkevm_bridge_operations: polygon_zkevm_bridge_operations,
-         shibarium_bridge_operations: shibarium_bridge_operations,
-         ext_transactions: ext_transactions,
-         utxo_transactions: utxo_transactions
+         shibarium_bridge_operations: shibarium_bridge_operations
        }) do
     case Application.get_env(:explorer, :chain_type) do
       "quai" ->
         basic_import_options
-        |> Map.put_new(:ext_transactions, %{params: ext_transactions})
-        |> Map.put(:transactions, %{params: transactions_with_receipts ++ utxo_transactions})
+        |> Map.put(:transactions, %{params: transactions_with_receipts ++ transactions_params})
 
       "ethereum" ->
         basic_import_options

@@ -627,4 +627,9 @@ defmodule EthereumJSONRPC do
 
   defp chunk_requests(requests, nil), do: requests
   defp chunk_requests(requests, chunk_size), do: Enum.chunk_every(requests, chunk_size)
+
+  def etx_to_atom(ext_type = "coinbase"), do: :coinbase
+  def etx_to_atom(ext_type = "conversion"), do: :conversion
+  def etx_to_atom(ext_type = "etx"), do: :external
+  def etx_to_atom(_), do: nil
 end
