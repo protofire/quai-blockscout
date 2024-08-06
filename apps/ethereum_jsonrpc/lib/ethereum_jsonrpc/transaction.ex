@@ -351,7 +351,7 @@ defmodule EthereumJSONRPC.Transaction do
           "isEtx" => is_etx
         } = _transaction
       ) do
-    result = %{
+    %{
       block_hash: block_hash,
       block_number: block_number,
       from_address_hash: from,
@@ -459,8 +459,8 @@ defmodule EthereumJSONRPC.Transaction do
   #   }
   # end
 
-  # # TODO: UTXO Transactions
-  # def do_elixir_to_params(%{"type" => 2} = _transaction), do: %{}
+  # TODO: UTXO Transactions
+  def do_elixir_to_params(%{"type" => 2} = _transaction), do: %{}
 
   # # Default method, but no transaction should go through here
   def do_elixir_to_params(

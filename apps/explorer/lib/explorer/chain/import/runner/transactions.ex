@@ -65,22 +65,6 @@ defmodule Explorer.Chain.Import.Runner.Transactions do
         :transactions
       )
     end)
-    |> Multi.run(:update_ext_transactions, fn repo, _ ->
-      Instrumenter.block_import_stage_runner(
-        fn -> update_ext_transactions(repo, changes_list, insert_options) end,
-        :block_referencing,
-        :transactions,
-        :update_ext_transactions
-      )
-    end)
-    |> Multi.run(:update_transactions_status, fn repo, _ ->
-      Instrumenter.block_import_stage_runner(
-        fn -> update_transactions_status(repo, changes_list, insert_options) end,
-        :block_referencing,
-        :transactions,
-        :update_transactions_status
-      )
-    end)
   end
 
   @impl Import.Runner
@@ -509,66 +493,5 @@ defmodule Explorer.Chain.Import.Runner.Transactions do
           {:error, %{exception: postgrex_error, transaction_hashes: transaction_hashes}}
       end
     end
-  end
-
-  defp update_ext_transactions(repo, changes_list, %{
-         timeout: timeout
-       })
-       when is_list(changes_list) do
-    status_completed = ExtTransaction.get_completed_status()
-
-    ext_updated =
-      changes_list
-      |> Enum.reduce(0, fn %{hash: transaction_hash}, acc ->
-        {:ok, hash} = Hash.Full.dump(transaction_hash)
-
-        updates =
-          repo.update_all(
-            from(ext in ExtTransaction, where: ext.hash == ^hash),
-            [set: [status: status_completed]],
-            timeout: timeout
-          )
-
-        case updates do
-          {n, _} -> acc + n
-        end
-      end)
-
-    {:ok, ext_updated}
-  end
-
-  defp update_transactions_status(repo, changes_list, %{
-         timeout: timeout
-       })
-       when is_list(changes_list) do
-    status_completed = ExtTransaction.get_completed_status()
-
-    transaction_status_updated =
-      changes_list
-      |> Enum.reduce(0, fn %{hash: transaction_hash}, acc ->
-        {:ok, hash} = Hash.Full.dump(transaction_hash)
-
-        ext_transaction =
-          repo.one(
-            from(ext in ExtTransaction, where: ext.hash == ^hash and ext.status == ^status_completed),
-            timeout: timeout
-          )
-
-        case ext_transaction do
-          ext ->
-            repo.update_all(
-              from(tx in Transaction, where: tx.hash == ^hash),
-              [set: [status: 2, error: nil]],
-              timeout: timeout
-            )
-
-            acc + 1
-
-          nil ->
-            acc + 0
-        end
-      end)
-
-    {:ok, transaction_status_updated}
   end
 end
