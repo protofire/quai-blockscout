@@ -7,6 +7,7 @@ defmodule Explorer.Repo.Migrations.AddQuaiTransactionsFields do
     execute("ALTER TABLE transactions DROP CONSTRAINT collated_gas_used")
     # ???
     execute("ALTER TABLE transactions DROP CONSTRAINT collated_index")
+    execute("DROP INDEX transactions_block_hash_index_index")
 
     alter table(:transactions) do
       add(:chain_id, :integer, null: true)
@@ -24,5 +25,7 @@ defmodule Explorer.Repo.Migrations.AddQuaiTransactionsFields do
       modify(:value, :numeric, precision: 100, null: true)
       modify(:from_address_hash, :bytea, null: true)
     end
+
+    create(unique_index(:transactions, [:block_hash, :index, :is_etx]))
   end
 end

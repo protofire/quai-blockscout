@@ -116,7 +116,9 @@ defmodule Explorer.Chain.Import.Runner.Transactions do
       repo,
       ordered_changes_list,
       conflict_target: :hash,
-      on_conflict: on_conflict,
+      # on_conflict: on_conflict,
+      # need to review query to solve conflicts
+      on_conflict: :nothing,
       for: Transaction,
       returning: true,
       timeout: timeout,

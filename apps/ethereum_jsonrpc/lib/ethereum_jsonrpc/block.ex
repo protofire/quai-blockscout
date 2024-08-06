@@ -672,33 +672,9 @@ defmodule EthereumJSONRPC.Block do
     Map.get(elixir, "transactions", [])
   end
 
-  # This transaction return all non system transactions that required receipts
-  @spec elixir_to_transactions_required_receipts(elixir) :: Transactions.elixir()
-  def elixir_to_transactions_required_receipts(elixir) do
-    Map.get(elixir, "transactions", [])
-  end
-
-  def elixir_to_transactions(_), do: []
-
-  @spec elixir_to_ext_transactions(elixir) :: ExtTransactions.elixir()
+  @spec elixir_to_ext_transactions(elixir) :: Transactions.elixir()
   def elixir_to_ext_transactions(%{"extTransactions" => extTransactions}), do: extTransactions
   def elixir_to_ext_transactions(_), do: []
-
-  @spec elixir_to_utxo_transactions(elixir) :: Transactions.elixir()
-  def elixir_to_utxo_transactions(elixir) do
-    blockNumber = Map.get(elixir, "woHeader", %{}) |> Map.get("number", nil)
-    blockHash = Map.get(elixir, "hash", nil)
-
-    # Filter transactions by type == 2, because of type 2 it's a UTXO transaction
-    Map.get(elixir, "transactions", [])
-    # Getting all UTXO transactions
-    |> Enum.filter(fn tx -> Map.get(tx, "type", 0) == 2 end)
-    # Set current block number and block hash for all UTXO transactions
-    |> Enum.map(fn tx -> Map.put(tx, "blockNumber", blockNumber) end)
-    |> Enum.map(fn tx -> Map.put(tx, "blockHash", blockHash) end)
-    # Add status 1 for all UTXO transactions
-    |> Enum.map(fn tx -> Map.put(tx, "status", 1) end)
-  end
 
   @doc """
   Get `t:EthereumJSONRPC.Uncles.elixir/0` from `t:elixir/0`.
@@ -967,8 +943,8 @@ defmodule EthereumJSONRPC.Block do
     {key, Transactions.to_elixir(transactions, timestamp_to_datetime(Map.get(woHeader, "time", 0)))}
   end
 
-  defp entry_to_elixir({"extTransactions" = key, extTransactions}, _block) do
-    {key, ExtTransactions.to_elixir(extTransactions)}
+  defp entry_to_elixir({"extTransactions" = key, transactions}, %{"woHeader" => woHeader}) when is_map(woHeader) do
+    {key, Transactions.to_elixir(transactions, timestamp_to_datetime(Map.get(woHeader, "time", 0)))}
   end
 
   defp entry_to_elixir({"withdrawals" = key, nil}, _block) do
