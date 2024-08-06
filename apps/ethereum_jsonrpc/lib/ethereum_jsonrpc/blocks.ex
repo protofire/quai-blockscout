@@ -62,7 +62,7 @@ defmodule EthereumJSONRPC.Blocks do
       errors: errors,
       blocks_params: blocks_params,
       block_second_degree_relations_params: block_second_degree_relations_params,
-      transactions_params: Enum.filter(block_transactions, fn tx -> tx.etx_type == nil end),
+      transactions_params: Enum.filter(block_transactions, fn tx -> tx.etx_type != nil end),
       transactions_without_receipts_params: Enum.filter(block_transactions, fn tx -> tx.etx_type == nil end),
       withdrawals_params: withdrawals_params
     }

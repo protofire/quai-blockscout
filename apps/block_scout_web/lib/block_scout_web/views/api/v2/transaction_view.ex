@@ -640,7 +640,7 @@ defmodule BlockScoutWeb.API.V2.TransactionView do
                | :token_creation
                | :token_transfer
                | :blob_transaction
-               | :internal_to_external_transaction
+               | :etx_type
                | :utxo_transaction
   def tx_types(tx, types \\ [], stage \\ :utxo_transaction)
 
@@ -648,14 +648,14 @@ defmodule BlockScoutWeb.API.V2.TransactionView do
     if type == 2 do
       [:utxo_transaction | types]
     else
-      tx_types(tx, types, :internal_to_external_transaction)
+      tx_types(tx, types, :etx_type)
     end
   end
 
-  def tx_types(%Transaction{type: type} = tx, types, :internal_to_external_transaction) do
+  def tx_types(%Transaction{type: type, etx_type: etx_type} = tx, types, :etx_type) do
     types =
       if type == 1 do
-        [:internal_to_external_transaction | types]
+        [etx_type | types]
       else
         types
       end
@@ -724,9 +724,9 @@ defmodule BlockScoutWeb.API.V2.TransactionView do
     tx_types(tx, types, :coin_transfer)
   end
 
-  def tx_types(%Transaction{value: value} = tx, types, :coin_transfer) do
+  def tx_types(%Transaction{value: value, etx_type: etx_type} = tx, types, :coin_transfer) do
     types =
-      if value.value != nil and Decimal.compare(value.value, 0) == :gt do
+      if value.value != nil and Decimal.compare(value.value, 0) == :gt and is_nil(etx_type) do
         [:coin_transfer | types]
       else
         types
