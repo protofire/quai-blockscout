@@ -3074,8 +3074,6 @@ defmodule Explorer.Chain do
           | {:error, :awaiting_internal_transactions}
           | {:error, reason :: String.t()}
   def transaction_to_status(%Transaction{error: "dropped/replaced"}), do: {:error, "dropped/replaced"}
-  def transaction_to_status(%Transaction{is_etx: true}), do: :pending
-  def transaction_to_status(%Transaction{is_etx: false}), do: :success
   def transaction_to_status(%Transaction{block_hash: nil, status: nil}), do: :pending
   def transaction_to_status(%Transaction{status: nil}), do: :awaiting_internal_transactions
   def transaction_to_status(%Transaction{status: :ok}), do: :success

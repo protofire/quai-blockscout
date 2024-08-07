@@ -21,9 +21,7 @@ defmodule BlockScoutWeb.API.V2.BlockController do
   case Application.compile_env(:explorer, :chain_type) do
     "quai" ->
       @chain_type_transaction_necessity_by_association %{}
-      @chain_type_block_necessity_by_association %{
-        :ext_transactions => :optional,
-      }
+      @chain_type_block_necessity_by_association %{}
 
     "ethereum" ->
       @chain_type_transaction_necessity_by_association %{
@@ -52,7 +50,7 @@ defmodule BlockScoutWeb.API.V2.BlockController do
       %{
         [from_address: :names] => :optional,
         [to_address: :names] => :optional,
-        :block => :optional,
+        :block => :optional
       }
       |> Map.merge(@chain_type_transaction_necessity_by_association)
   ]
@@ -174,7 +172,10 @@ defmodule BlockScoutWeb.API.V2.BlockController do
       conn
       |> put_status(200)
       |> put_view(ExternalTransactionView)
-      |> render(:external_transactions, %{transactions: transactions |> maybe_preload_ens(), next_page_params: next_page_params})
+      |> render(:external_transactions, %{
+        transactions: transactions |> maybe_preload_ens(),
+        next_page_params: next_page_params
+      })
     end
   end
 

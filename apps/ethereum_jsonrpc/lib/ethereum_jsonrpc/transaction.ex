@@ -18,10 +18,7 @@ defmodule EthereumJSONRPC.Transaction do
                              chain_id: non_neg_integer(),
                              inputs: EthereumJSONRPC.data(),
                              outputs: EthereumJSONRPC.data(),
-                             is_etx: :boolean,
-                             etx_index: non_neg_integer(),
-                             etx_type: non_neg_integer(),
-                             originating_tx_hash: EthereumJSONRPC.hash()
+                             etx_type: non_neg_integer()
                            ]
                          )
 
@@ -287,11 +284,7 @@ defmodule EthereumJSONRPC.Transaction do
           "value" => value,
           "accessList" => access_list,
           "chainId" => chain_id,
-          "v" => v,
-          "r" => r,
-          "s" => s,
-          "etxType" => etx_type,
-          "isEtx" => is_etx
+          "etxType" => etx_type
         } = transaction
       ) do
     result = %{
@@ -310,7 +303,6 @@ defmodule EthereumJSONRPC.Transaction do
       chain_id: chain_id,
       type: type,
       etx_type: etx_type,
-      is_etx: is_etx,
       status: 1,
       gas_price: 0,
       gas_used: 0,
@@ -347,8 +339,7 @@ defmodule EthereumJSONRPC.Transaction do
           "originatingTxHash" => originating_tx_hash,
           "etxIndex" => etx_index,
           "etxType" => etx_type,
-          "from" => from,
-          "isEtx" => is_etx
+          "from" => from
         } = _transaction
       ) do
     %{
@@ -367,7 +358,6 @@ defmodule EthereumJSONRPC.Transaction do
       originating_tx_hash: originating_tx_hash,
       type: type,
       to_address_hash: to,
-      is_etx: is_etx,
       status: 1,
       gas_price: 0,
       gas_used: 0,
@@ -375,92 +365,43 @@ defmodule EthereumJSONRPC.Transaction do
     }
   end
 
-  # def do_elixir_to_params(
-  #       %{
-  #         "blockHash" => block_hash,
-  #         "blockNumber" => block_number,
-  #         "gas" => gas,
-  #         "hash" => hash,
-  #         "input" => input,
-  #         "nonce" => nonce,
-  #         "transactionIndex" => transaction_index,
-  #         "value" => value,
-  #         "etxIndex" => etx_index,
-  #         "from" => from,
-  #         "to" => to,
-  #         "type" => 1 = type
-  #       } = _transaction
-  #     ) do
-  #   %{
-  #     block_hash: block_hash,
-  #     block_number: block_number,
-  #     gas: gas,
-  #     hash: hash,
-  #     input: input,
-  #     nonce: nonce,
-  #     index: transaction_index,
-  #     value: value,
-  #     etx_index: etx_index,
-  #     from_address_hash: from,
-  #     to_address_hash: to,
-  #     transaction_hash: hash,
-  #     type: type,
-  #     status: 1,
-  #     gas_price: 0,
-  #     gas_used: 0,
-  #     cumulative_gas_used: 0
-  #   }
-  # end
-
-  # def do_elixir_to_params(
-  #       %{
-  #         "blockHash" => block_hash,
-  #         "blockNumber" => block_number,
-  #         "gas" => gas,
-  #         "hash" => hash,
-  #         "input" => input,
-  #         "nonce" => nonce,
-  #         "transactionIndex" => transaction_index,
-  #         "value" => value,
-  #         "from" => from,
-  #         "to" => to,
-  #         "chainId" => chain_id,
-  #         "maxFeePerGas" => max_fee_per_gas,
-  #         "maxPriorityFeePerGas" => max_priority_fee_per_gas,
-  #         "v" => v,
-  #         "r" => r,
-  #         "s" => s,
-  #         "accessList" => access_list,
-  #         "type" => 0 = type
-  #       } = _transaction
-  #     ) do
-  #   %{
-  #     block_hash: block_hash,
-  #     block_number: block_number,
-  #     gas: gas,
-  #     hash: hash,
-  #     input: input,
-  #     nonce: nonce,
-  #     index: transaction_index,
-  #     value: value,
-  #     from_address_hash: from,
-  #     to_address_hash: to,
-  #     chain_id: chain_id,
-  #     max_fee_per_gas: max_fee_per_gas,
-  #     max_priority_fee_per_gas: max_priority_fee_per_gas,
-  #     v: v,
-  #     r: r,
-  #     s: s,
-  #     access_list: access_list,
-  #     type: type,
-  #     gas_price: 0,
-  #     gas_used: 0,
-  #     status: 1
-  #   }
-  # end
-
-  # TODO: UTXO Transactions
-  def do_elixir_to_params(%{"type" => 2} = _transaction), do: %{}
+  def do_elixir_to_params(
+        %{
+          "type" => 2 = type
+          # "blockHash" => block_hash,
+          # "blockNumber" => block_number,
+          # "gas" => gas,
+          # "hash" => hash,
+          # "input" => input,
+          # "nonce" => nonce,
+          # "transactionIndex" => transaction_index,
+          # "chainId" => chain_id,
+          # "inputs" => inputs,
+          # "outputs" => outputs,
+          # "utxoSignature" => utxo_signature,
+          # "etxType" => etx_type
+        } = _utxo_transaction
+      ) do
+    %{
+      # block_hash: block_hash,
+      # block_number: block_number,
+      # gas: gas,
+      # hash: hash,
+      # input: input,
+      # inputs: inputs,
+      # outputs: outputs,
+      # nonce: nonce,
+      # index: transaction_index,
+      # etx_type: etx_type,
+      # utxo_signature: utxo_signature,
+      # chain_id: chain_id,
+      type: type,
+      status: 1,
+      gas_price: 0,
+      gas_used: 0,
+      cumulative_gas_used: 0
+    }
+  end
 
   # # Default method, but no transaction should go through here
   def do_elixir_to_params(

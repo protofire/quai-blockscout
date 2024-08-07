@@ -63,7 +63,10 @@ defmodule EthereumJSONRPC.Transactions do
 
   """
   def elixir_to_params(elixir) when is_list(elixir) do
-    Enum.map(elixir, &Transaction.elixir_to_params/1)
+    elixir
+    |> Enum.map(&Transaction.elixir_to_params/1)
+    # UTXO transaction have incomplete fields, removing them from indexing for now
+    |> Enum.filter(fn %{type: type} -> type != 2 end)
   end
 
   @doc """

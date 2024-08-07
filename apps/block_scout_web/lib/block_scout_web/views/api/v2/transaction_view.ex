@@ -451,8 +451,6 @@ defmodule BlockScoutWeb.API.V2.TransactionView do
       "has_error_in_internal_txs" => transaction.has_error_in_internal_txs,
       "inputs" => transaction.inputs,
       "outputs" => transaction.outputs,
-      "is_etx" => transaction.is_etx,
-      "etx_index" => transaction.etx_index,
       "etx_type" => transaction.etx_type
     }
 

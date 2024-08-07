@@ -37,7 +37,6 @@ defmodule BlockScoutWeb.API.V2.BlockView do
       "height" => block.number,
       "timestamp" => block.timestamp,
       "tx_count" => count_transactions(block),
-      "ext_tx_count" => count_external_transactions(block),
       "miner" => Helper.address_with_info(nil, block.miner, block.miner_hash, false),
       "size" => block.size,
       "hash" => block.hash,
@@ -123,9 +122,6 @@ defmodule BlockScoutWeb.API.V2.BlockView do
 
   def count_transactions(%Block{transactions: txs}) when is_list(txs), do: Enum.count(txs)
   def count_transactions(_), do: nil
-
-  def count_external_transactions(%Block{ext_transactions: ext_txs}) when is_list(ext_txs), do: Enum.count(ext_txs)
-  def count_external_transactions(_), do: nil
 
   def count_withdrawals(%Block{withdrawals: withdrawals}) when is_list(withdrawals), do: Enum.count(withdrawals)
   def count_withdrawals(_), do: nil

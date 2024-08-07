@@ -34,7 +34,6 @@ defmodule Explorer.Chain.Block.Schema do
                               field(:parent_delta_s, :binary)
                               field(:parent_entropy_full, {:array, :binary})
                               field(:parent_delta_s_full, {:array, :binary})
-                              has_many(:ext_transactions, ExtTransaction, references: :hash)
                               # Golden Age
                               field(:evm_root, Hash.Full)
                               field(:utxo_root, Hash.Full)

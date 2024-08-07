@@ -528,7 +528,6 @@ defmodule EthereumJSONRPC.Block do
         params
         |> Map.merge(%{
           ext_rollup_root: Map.get(elixir, "extRollupRoot"),
-          ext_transactions: Map.get(elixir, "extTransactions", []),
           ext_transactions_root: Map.get(elixir, "extTransactionsRoot"),
           location: Map.get(elixir, "location"),
           manifest_hash: Map.get(elixir, "manifestHash"),
