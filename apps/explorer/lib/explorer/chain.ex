@@ -1834,6 +1834,15 @@ defmodule Explorer.Chain do
   end
 
   @doc """
+  Finds all transactions of a certain block number
+  """
+  def get_contracts_created_of_block_number(block_number) do
+    block_number
+    |> Transaction.contracts_created_with_block_number()
+    |> Repo.all()
+  end
+
+  @doc """
   Finds all Blocks validated by the address with the given hash.
 
     ## Options

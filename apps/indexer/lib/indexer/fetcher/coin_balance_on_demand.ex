@@ -218,7 +218,10 @@ defmodule Indexer.Fetcher.CoinBalanceOnDemand do
   end
 
   defp fetch_balances(block_number, address, json_rpc_named_arguments) do
-    params = %{block_quantity: integer_to_quantity(block_number), hash_data: to_string(address.hash)}
+    params = %{
+      block_quantity: integer_to_quantity(block_number),
+      hash_data: to_string(Address.checksum(address.hash))
+    }
 
     EthereumJSONRPC.fetch_balances([params], json_rpc_named_arguments)
   end

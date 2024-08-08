@@ -1150,7 +1150,14 @@ defmodule Explorer.Chain.Transaction do
   def transactions_with_block_number(block_number) do
     from(
       t in Transaction,
-      where: t.block_number == ^block_number and is_nil(t.etx_type)
+      where: t.block_number == ^block_number
+    )
+  end
+
+  def contracts_created_with_block_number(block_number) do
+    from(
+      t in Transaction,
+      where: t.block_number == ^block_number and not is_nil(t.created_contract_address_hash)
     )
   end
 

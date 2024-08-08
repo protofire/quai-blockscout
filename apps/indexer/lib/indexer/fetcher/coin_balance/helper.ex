@@ -11,6 +11,7 @@ defmodule Indexer.Fetcher.CoinBalance.Helper do
   alias Explorer.Chain
   alias Explorer.Chain.Cache.Accounts
   alias Explorer.Chain.Hash
+  alias Explorer.Chain.Address
   alias Indexer.BufferedTask
 
   @doc false
@@ -74,7 +75,7 @@ defmodule Indexer.Fetcher.CoinBalance.Helper do
 
   defp entry_to_params({address_hash_bytes, block_number}) when is_integer(block_number) do
     {:ok, address_hash} = Hash.Address.cast(address_hash_bytes)
-    %{block_quantity: integer_to_quantity(block_number), hash_data: to_string(address_hash)}
+    %{block_quantity: integer_to_quantity(block_number), hash_data: to_string(Address.checksum(address_hash))}
   end
 
   # We want to record all historical balances for an address, but have the address itself have balance from the
