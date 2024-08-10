@@ -7,7 +7,7 @@ defmodule EthereumJSONRPC.Block do
   @quai_attrs ~w(manifestHash number parentHash parentEntropy parentDeltaS)a
   import EthereumJSONRPC, only: [quantity_to_integer: 1, timestamp_to_datetime: 1]
 
-  alias EthereumJSONRPC.{ExtTransactions, Transactions, Uncles, Withdrawals}
+  alias EthereumJSONRPC.{Transactions, Uncles, Withdrawals}
 
   def map_keys(object) do
     # Use Enum.reduce to iterate over the key-value pairs in the object
@@ -719,18 +719,14 @@ defmodule EthereumJSONRPC.Block do
 
   """
   @spec elixir_to_uncles(elixir) :: Uncles.elixir()
-  def elixir_to_uncles(%{"hash" => nephew_hash, "uncles" => []}) do
-    []
-  end
-
-  def elixir_to_uncles(%{"hash" => nephew_hash, "uncles" => [first | _] = uncles}) when is_binary(first) do
-    uncles
-    |> Enum.with_index()
-    |> Enum.map(fn {uncle_hash, index} -> %{"hash" => uncle_hash, "nephewHash" => nephew_hash, "index" => index} end)
-  end
 
   def elixir_to_uncles(%{"hash" => nephew_hash, "uncles" => [first | _] = uncles}) when is_map(first) do
     uncles
+    # Quai display workShares transactions inside of the uncles array
+    # we need to filter these tx out
+    |> Enum.filter(fn %{"workShare" => isWorkShare?} ->
+      !isWorkShare?
+    end)
     |> Enum.with_index()
     |> Enum.map(fn {work_object, index} ->
       %{
