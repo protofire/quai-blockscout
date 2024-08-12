@@ -59,7 +59,8 @@ defmodule BlockScoutWeb.API.V2.Helper do
       "name" => address_name(address),
       "implementation_name" => implementation_name(address),
       "is_verified" => verified?(address),
-      "ens_domain_name" => address.ens_domain_name
+      "ens_domain_name" => address.ens_domain_name,
+      "currency" => address.currency
     }
   end
 

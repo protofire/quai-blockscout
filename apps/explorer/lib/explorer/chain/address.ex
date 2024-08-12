@@ -89,6 +89,7 @@ defmodule Explorer.Chain.Address do
     field(:token_transfers_count, :integer)
     field(:gas_used, :integer)
     field(:ens_domain_name, :string, virtual: true)
+    field(:currency, Ecto.Enum, values: [quai: 0, qi: 1])
 
     has_one(:smart_contract, SmartContract, references: :hash)
     has_one(:token, Token, foreign_key: :contract_address_hash, references: :hash)
@@ -124,10 +125,13 @@ defmodule Explorer.Chain.Address do
   end
 
   def changeset(%__MODULE__{} = address, attrs) do
+    address_currency = address_currency(attrs)
+
     address
     |> cast(attrs, @allowed_attrs)
     |> validate_required(@required_attrs)
     |> unique_constraint(:hash)
+    |> put_change(:currency, address_currency)
   end
 
   defp changeset(%Changeset{data: %__MODULE__{}} = changeset) do
@@ -175,7 +179,7 @@ defmodule Explorer.Chain.Address do
     |> stream_binary()
     |> Stream.zip(match_byte_stream)
     |> Enum.map(fn
-      {digit, _} when digit in '0123456789' ->
+      {digit, _} when digit in ~c"0123456789" ->
         digit
 
       {alpha, 1} ->
@@ -203,7 +207,7 @@ defmodule Explorer.Chain.Address do
     |> stream_binary()
     |> Stream.zip(match_byte_stream)
     |> Enum.map(fn
-      {digit, _} when digit in '0123456789' ->
+      {digit, _} when digit in ~c"0123456789" ->
         digit
 
       {alpha, 1} ->
@@ -423,4 +427,25 @@ defmodule Explorer.Chain.Address do
 
     Chain.select_repo(options).exists?(query)
   end
+
+  @spec address_currency(Hash.Address.t()) :: :quai | :qi
+  def address_currency(address_map)
+
+  @doc """
+  Implementation copied from the quais.js SDK repository, original implementation:
+  https://github.com/dominant-strategies/quais.js/blob/fae9e233e74c540ce0f6c2aa4b8d2631ec0965cf/src/address/checks.ts#L126
+  """
+  def address_currency(%{hash: address_hash}) when not is_nil(address_hash) do
+    {address_bit, _} = (String.at(address_hash, 4) <> String.at(address_hash, 6)) |> Integer.parse(16)
+
+    case address_bit
+         |> Integer.to_string(2)
+         |> String.pad_leading(8, "0")
+         |> String.first() == "1" do
+      true -> :qi
+      _ -> :quai
+    end
+  end
+
+  def address_currency(_), do: nil
 end
