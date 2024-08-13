@@ -435,6 +435,10 @@ defmodule Explorer.Chain.Address do
   Implementation copied from the quais.js SDK repository, original implementation:
   https://github.com/dominant-strategies/quais.js/blob/fae9e233e74c540ce0f6c2aa4b8d2631ec0965cf/src/address/checks.ts#L126
   """
+  def address_currency(%{hash: %Explorer.Chain.Hash{}} = address) do
+    address_currency(%{address | hash: to_string(address.hash)})
+  end
+
   def address_currency(%{hash: address_hash}) when not is_nil(address_hash) do
     {address_bit, _} = (String.at(address_hash, 4) <> String.at(address_hash, 6)) |> Integer.parse(16)
 

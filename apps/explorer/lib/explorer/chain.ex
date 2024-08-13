@@ -65,8 +65,7 @@ defmodule Explorer.Chain do
     TokenTransfer,
     Transaction,
     Wei,
-    Withdrawal,
-    ExtTransaction
+    Withdrawal
   }
 
   alias Explorer.Chain.Cache.{
