@@ -16,7 +16,17 @@ defmodule EthereumJSONRPC.FetchedBalance do
           {:ok, params()}
         when id: non_neg_integer(), block_quantity: String.t(), hash_data: String.t()
   def from_response(%{id: id, result: fetched_balance_quantity}, id_to_params) when is_map(id_to_params) do
-    %{block_quantity: block_quantity, hash_data: hash_data} = Map.fetch!(id_to_params, id)
+    %{block_quantity: block_quantity, hash_data: hash_data} =
+      case Map.fetch!(id_to_params, id) do
+        # Special case made for the UTXO ledger, block_quantity will be "latest"
+        # so we need to use the original block number instead
+        %{hash_data: hash_data, original_block_number: block_number} ->
+          %{block_quantity: block_number, hash_data: hash_data}
+
+        # Default path
+        %{hash_data: hash_data, block_quantity: block_quantity} ->
+          %{block_quantity: block_quantity, hash_data: hash_data}
+      end
 
     {:ok,
      %{

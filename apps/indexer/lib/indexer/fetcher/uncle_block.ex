@@ -86,8 +86,6 @@ defmodule Indexer.Fetcher.UncleBlock do
     entry_count = Enum.count(unique_entries)
     Logger.metadata(count: entry_count)
 
-    Logger.debug("fetching")
-
     unique_entries
     |> Enum.map(&entry_to_params/1)
     |> EthereumJSONRPC.fetch_uncle_blocks(json_rpc_named_arguments)

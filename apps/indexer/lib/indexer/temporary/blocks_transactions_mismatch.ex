@@ -70,8 +70,6 @@ defmodule Indexer.Temporary.BlocksTransactionsMismatch do
   def run(blocks_data, json_rpc_named_arguments) do
     hashes = Enum.map(blocks_data, fn {hash, _trans_num} -> hash end)
 
-    Logger.debug("fetching")
-
     case EthereumJSONRPC.fetch_blocks_by_hash(hashes, json_rpc_named_arguments) do
       {:ok, blocks} ->
         run_blocks(blocks, blocks_data)

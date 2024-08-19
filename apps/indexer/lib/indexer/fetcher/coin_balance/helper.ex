@@ -48,8 +48,6 @@ defmodule Indexer.Fetcher.CoinBalance.Helper do
     unique_entry_count = Enum.count(unique_filtered_entries)
     Logger.metadata(count: unique_entry_count)
 
-    Logger.debug(fn -> "fetching" end)
-
     unique_filtered_entries
     |> Enum.map(&entry_to_params/1)
     |> EthereumJSONRPC.fetch_balances(json_rpc_named_arguments)
@@ -75,7 +73,18 @@ defmodule Indexer.Fetcher.CoinBalance.Helper do
 
   defp entry_to_params({address_hash_bytes, block_number}) when is_integer(block_number) do
     {:ok, address_hash} = Hash.Address.cast(address_hash_bytes)
-    %{block_quantity: integer_to_quantity(block_number), hash_data: to_string(Address.checksum(address_hash))}
+
+    block_quantity =
+      case Address.address_currency(%{hash: address_hash}) do
+        :qi -> "latest"
+        _ -> integer_to_quantity(block_number)
+      end
+
+    %{
+      block_quantity: block_quantity,
+      original_block_number: block_number,
+      hash_data: to_string(Address.checksum(address_hash))
+    }
   end
 
   # We want to record all historical balances for an address, but have the address itself have balance from the

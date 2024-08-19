@@ -221,38 +221,27 @@ defmodule EthereumJSONRPC do
     end
   end
 
-  @quai_contexts [
-    %{shard: "cyprus1", context: 2, byte: ["00", "1d"]},
-    %{shard: "cyprus2", context: 2, byte: ["1e", "3a"]},
-    %{shard: "cyprus3", context: 2, byte: ["3b", "57"]},
-    %{shard: "paxos1", context: 2, byte: ["58", "73"]},
-    %{shard: "paxos2", context: 2, byte: ["74", "8f"]},
-    %{shard: "paxos3", context: 2, byte: ["90", "ab"]},
-    %{shard: "hydra1", context: 2, byte: ["ac", "c7"]},
-    %{shard: "hydra2", context: 2, byte: ["c8", "e3"]},
-    %{shard: "hydra3", context: 2, byte: ["e4", "ff"]}
-  ]
-
+  @doc """
+  Might be good to move this function to the `Explorer.Chain.Address` module
+  since it is related only to addresses, but unused elsewhere
+  """
   def get_shard_from_address(address) do
-    get_in(
-      Enum.at(
-        Enum.filter(
-          @quai_contexts,
-          fn obj ->
-            num =
-              address
-              |> String.slice(2, 2)
-              |> String.to_integer(16)
-
-            start = String.to_integer(Enum.at(obj.byte, 0), 16)
-            finish = String.to_integer(Enum.at(obj.byte, 1), 16)
-            num >= start and num <= finish
-          end
-        ),
-        0
-      ),
-      [:shard]
-    )
+    case address do
+      "0x00" <> _ -> "cyprus1"
+      "0x01" <> _ -> "cyprus2"
+      "0x02" <> _ -> "cyprus3"
+      "0x10" <> _ -> "paxos1"
+      "0x11" <> _ -> "paxos2"
+      "0x12" <> _ -> "paxos3"
+      "0x20" <> _ -> "hydra1"
+      "0x21" <> _ -> "hydra2"
+      "0x22" <> _ -> "hydra3"
+      "0x1" <> _ -> "cyprus"
+      "0x2" <> _ -> "paxos"
+      "0x3" <> _ -> "hydra"
+      "0x" <> _ -> "prime"
+      _ -> nil
+    end
   end
 
   def remove_external_addresses(addresses) do

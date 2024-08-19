@@ -3,7 +3,7 @@ defmodule Explorer.Repo.Migrations.UpdateAddressWithCurrency do
   import Ecto.Query
 
   alias Explorer.Repo
-  alias Explorer.Chain.{Hash, Address}
+  alias Explorer.Chain.{Address}
 
   def up do
     from(a in Address)

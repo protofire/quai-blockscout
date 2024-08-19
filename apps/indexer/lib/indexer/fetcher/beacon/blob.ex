@@ -86,8 +86,6 @@ defmodule Indexer.Fetcher.Beacon.Blob do
     entry_count = Enum.count(entries)
     Logger.metadata(count: entry_count)
 
-    Logger.debug(fn -> "fetching" end)
-
     entries
     |> Enum.map(&entry_to_slot(&1, state))
     |> Client.get_blob_sidecars()

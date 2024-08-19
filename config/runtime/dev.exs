@@ -47,6 +47,7 @@ queue_target = ConfigHelper.parse_integer_env_var("DATABASE_QUEUE_TARGET", 50)
 # Configure your database
 config :explorer, Explorer.Repo,
   database: database,
+  log: false,
   hostname: hostname,
   url: System.get_env("DATABASE_URL"),
   pool_size: pool_size,
@@ -58,6 +59,7 @@ hostname_api = if System.get_env("DATABASE_READ_ONLY_API_URL"), do: nil, else: h
 # Configure API database
 config :explorer, Explorer.Repo.Replica1,
   database: database_api,
+  log: false,
   hostname: hostname_api,
   url: ExplorerConfigHelper.get_api_db_url(),
   pool_size: ConfigHelper.parse_integer_env_var("POOL_SIZE_API", 10),
@@ -69,6 +71,7 @@ hostname_account = if System.get_env("ACCOUNT_DATABASE_URL"), do: nil, else: hos
 # Configure Account database
 config :explorer, Explorer.Repo.Account,
   database: database_account,
+  log: false,
   hostname: hostname_account,
   url: ExplorerConfigHelper.get_account_db_url(),
   pool_size: ConfigHelper.parse_integer_env_var("ACCOUNT_POOL_SIZE", 10),
@@ -77,6 +80,7 @@ config :explorer, Explorer.Repo.Account,
 # Configure Beacon Chain database
 config :explorer, Explorer.Repo.Beacon,
   database: database,
+  log: false,
   hostname: hostname,
   url: System.get_env("DATABASE_URL"),
   # actually this repo is not started, and its pool size remains unused.
@@ -86,6 +90,7 @@ config :explorer, Explorer.Repo.Beacon,
 # Configures BridgedTokens database
 config :explorer, Explorer.Repo.BridgedTokens,
   database: database,
+  log: false,
   hostname: hostname,
   url: System.get_env("DATABASE_URL"),
   # actually this repo is not started, and its pool size remains unused.
@@ -95,6 +100,7 @@ config :explorer, Explorer.Repo.BridgedTokens,
 # Configure Optimism database
 config :explorer, Explorer.Repo.Optimism,
   database: database,
+  log: false,
   hostname: hostname,
   url: System.get_env("DATABASE_URL"),
   pool_size: 1
@@ -102,6 +108,7 @@ config :explorer, Explorer.Repo.Optimism,
 # Configure PolygonEdge database
 config :explorer, Explorer.Repo.PolygonEdge,
   database: database,
+  log: false,
   hostname: hostname,
   url: System.get_env("DATABASE_URL"),
   # actually this repo is not started, and its pool size remains unused.
@@ -111,6 +118,7 @@ config :explorer, Explorer.Repo.PolygonEdge,
 # Configure PolygonZkevm database
 config :explorer, Explorer.Repo.PolygonZkevm,
   database: database,
+  log: false,
   hostname: hostname,
   url: System.get_env("DATABASE_URL"),
   # actually this repo is not started, and its pool size remains unused.
@@ -120,6 +128,7 @@ config :explorer, Explorer.Repo.PolygonZkevm,
 # Configure ZkSync database
 config :explorer, Explorer.Repo.ZkSync,
   database: database,
+  log: false,
   hostname: hostname,
   url: System.get_env("DATABASE_URL"),
   # actually this repo is not started, and its pool size remains unused.
@@ -129,6 +138,7 @@ config :explorer, Explorer.Repo.ZkSync,
 # Configure Rootstock database
 config :explorer, Explorer.Repo.RSK,
   database: database,
+  log: false,
   hostname: hostname,
   url: System.get_env("DATABASE_URL"),
   # actually this repo is not started, and its pool size remains unused.
@@ -138,6 +148,7 @@ config :explorer, Explorer.Repo.RSK,
 # Configure Shibarium database
 config :explorer, Explorer.Repo.Shibarium,
   database: database,
+  log: false,
   hostname: hostname,
   url: System.get_env("DATABASE_URL"),
   pool_size: 1
@@ -145,6 +156,7 @@ config :explorer, Explorer.Repo.Shibarium,
 # Configure Suave database
 config :explorer, Explorer.Repo.Suave,
   database: database,
+  log: false,
   hostname: hostname,
   url: ExplorerConfigHelper.get_suave_db_url(),
   pool_size: 1
@@ -152,6 +164,7 @@ config :explorer, Explorer.Repo.Suave,
 # Configure Filecoin database
 config :explorer, Explorer.Repo.Filecoin,
   database: database,
+  log: false,
   hostname: hostname,
   url: System.get_env("DATABASE_URL"),
   pool_size: 1
@@ -159,6 +172,7 @@ config :explorer, Explorer.Repo.Filecoin,
 # Configures Stability database
 config :explorer, Explorer.Repo.Stability,
   database: database,
+  log: false,
   hostname: hostname,
   url: System.get_env("DATABASE_URL"),
   pool_size: 1

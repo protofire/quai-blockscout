@@ -86,8 +86,6 @@ defmodule Indexer.Fetcher.BlockReward do
 
     Logger.metadata(count: consensus_number_count)
 
-    Logger.debug(fn -> "fetching" end)
-
     consensus_numbers
     |> EthereumJSONRPC.fetch_beneficiaries(json_rpc_named_arguments)
     |> case do

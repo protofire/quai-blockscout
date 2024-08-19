@@ -75,8 +75,6 @@ defmodule Indexer.Temporary.UnclesWithoutIndex do
     hash_count = Enum.count(hashes)
     Logger.metadata(count: hash_count)
 
-    Logger.debug("fetching")
-
     case EthereumJSONRPC.fetch_blocks_by_hash(hashes, json_rpc_named_arguments) do
       {:ok, blocks} ->
         run_blocks(blocks, hashes)
