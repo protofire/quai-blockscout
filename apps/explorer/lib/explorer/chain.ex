@@ -547,6 +547,7 @@ defmodule Explorer.Chain do
   def block_to_transactions(block_hash, options \\ [], old_ui? \\ true) when is_list(options) do
     necessity_by_association = Keyword.get(options, :necessity_by_association, %{})
     type_filter = Keyword.get(options, :type)
+    ext_type_filter = Keyword.get(options, :ext_type)
 
     options
     |> Keyword.get(:paging_options, @default_paging_options)
@@ -554,6 +555,7 @@ defmodule Explorer.Chain do
     |> join(:inner, [transaction], block in assoc(transaction, :block))
     |> where([_, block], block.hash == ^block_hash)
     |> apply_filter_by_tx_type_to_transactions(type_filter)
+    |> apply_filter_by_tx_ext_type_to_transactions(ext_type_filter)
     |> join_associations(necessity_by_association)
     |> Transaction.put_has_token_transfers_to_tx(old_ui?)
     |> (&if(old_ui?, do: preload(&1, [{:token_transfers, [:token, :from_address, :to_address]}]), else: &1)).()
@@ -2628,6 +2630,7 @@ defmodule Explorer.Chain do
     paging_options = Keyword.get(options, :paging_options, @default_paging_options)
     method_id_filter = Keyword.get(options, :method)
     type_filter = Keyword.get(options, :type)
+    ext_type_filter = Keyword.get(options, :ext_type)
 
     fetch_recent_collated_transactions(
       old_ui?,
@@ -2635,6 +2638,7 @@ defmodule Explorer.Chain do
       necessity_by_association,
       method_id_filter,
       type_filter,
+      ext_type_filter,
       options
     )
   end
@@ -2753,6 +2757,7 @@ defmodule Explorer.Chain do
         necessity_by_association,
         method_id_filter,
         type_filter,
+        ext_type_filter,
         options
       ) do
     paging_options
@@ -2763,6 +2768,7 @@ defmodule Explorer.Chain do
     )
     |> apply_filter_by_method_id_to_transactions(method_id_filter)
     |> apply_filter_by_tx_type_to_transactions(type_filter)
+    |> apply_filter_by_tx_ext_type_to_transactions(ext_type_filter)
     |> join_associations(necessity_by_association)
     |> Transaction.put_has_token_transfers_to_tx(old_ui?)
     |> (&if(old_ui?, do: preload(&1, [{:token_transfers, [:token, :from_address, :to_address]}]), else: &1)).()
@@ -2807,6 +2813,7 @@ defmodule Explorer.Chain do
     paging_options = Keyword.get(options, :paging_options, @default_paging_options)
     method_id_filter = Keyword.get(options, :method)
     type_filter = Keyword.get(options, :type)
+    ext_type_filter = Keyword.get(options, :ext_type)
 
     Transaction
     |> Transaction.page_pending_transaction(paging_options)
@@ -2814,6 +2821,7 @@ defmodule Explorer.Chain do
     |> pending_transactions_query()
     |> apply_filter_by_method_id_to_transactions(method_id_filter)
     |> apply_filter_by_tx_type_to_transactions(type_filter)
+    |> apply_filter_by_tx_ext_type_to_transactions(ext_type_filter)
     |> order_by([transaction], desc: transaction.inserted_at, asc: transaction.hash)
     |> join_associations(necessity_by_association)
     |> (&if(old_ui?, do: preload(&1, [{:token_transfers, [:token, :from_address, :to_address]}]), else: &1)).()
@@ -5128,6 +5136,15 @@ defmodule Explorer.Chain do
 
   def apply_filter_by_tx_type_to_transactions(query, _filter), do: query
 
+  def apply_filter_by_tx_ext_type_to_transactions(query, [_ | _] = filter) do
+    {dynamic, modified_query} = apply_filter_by_tx_ext_type_to_transactions_inner(filter, query)
+
+    modified_query
+    |> where(^dynamic)
+  end
+
+  def apply_filter_by_tx_ext_type_to_transactions(query, _filter), do: query
+
   def apply_filter_by_tx_type_to_transactions_inner(dynamic \\ dynamic(false), filter, query)
 
   def apply_filter_by_tx_type_to_transactions_inner(dynamic, [type | remain], query) do
@@ -5207,6 +5224,16 @@ defmodule Explorer.Chain do
     # EIP-2718 blob transaction type
     dynamic([tx], ^dynamic or tx.type == 3)
   end
+
+  def apply_filter_by_tx_ext_type_to_transactions_inner(dynamic \\ dynamic(false), filter, query)
+
+  def apply_filter_by_tx_ext_type_to_transactions_inner(dynamic, [type | remain], query) do
+    # type = [:coinbase, :external, :conversion]
+    dynamic([tx], ^dynamic or tx.etx_type == ^type)
+    |> apply_filter_by_tx_ext_type_to_transactions_inner(remain, query)
+  end
+
+  def apply_filter_by_tx_ext_type_to_transactions_inner(dynamic_query, _, query), do: {dynamic_query, query}
 
   def count_verified_contracts do
     Repo.aggregate(SmartContract, :count, timeout: :infinity)

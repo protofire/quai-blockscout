@@ -22,6 +22,12 @@ defmodule BlockScoutWeb.PagingHelper do
         "blob_transaction"
       ]
 
+      @allowed_ext_type_labels [
+        "coinbase",
+        "conversion",
+        "external"
+      ]
+
     "ethereum" ->
       @allowed_type_labels [
         "coin_transfer",
@@ -130,6 +136,12 @@ defmodule BlockScoutWeb.PagingHelper do
   end
 
   def type_filter_options(_params), do: [type: []]
+
+  def ext_type_filter_options(%{"ext_type" => type}) do
+    [ext_type: type |> parse_filter(@allowed_ext_type_labels) |> Enum.map(&String.to_atom/1)]
+  end
+
+  def ext_type_filter_options(_params), do: [ext_type: []]
 
   def method_filter_options(%{"method" => method}) do
     [method: parse_method_filter(method)]

@@ -11,7 +11,12 @@ defmodule BlockScoutWeb.API.V2.BlockController do
     ]
 
   import BlockScoutWeb.PagingHelper,
-    only: [delete_parameters_from_next_page_params: 1, select_block_type: 1, type_filter_options: 1]
+    only: [
+      delete_parameters_from_next_page_params: 1,
+      select_block_type: 1,
+      type_filter_options: 1,
+      ext_type_filter_options: 1
+    ]
 
   import Explorer.MicroserviceInterfaces.BENS, only: [maybe_preload_ens: 1]
 
@@ -135,6 +140,7 @@ defmodule BlockScoutWeb.API.V2.BlockController do
         @transaction_necessity_by_association
         |> Keyword.merge(put_key_value_to_paging_options(paging_options(params), :is_index_in_asc_order, true))
         |> Keyword.merge(type_filter_options(params))
+        |> Keyword.merge(ext_type_filter_options(params))
         |> Keyword.merge(@api_true)
 
       transactions_plus_one = Chain.block_to_transactions(block.hash, full_options, false)

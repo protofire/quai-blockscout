@@ -20,7 +20,8 @@ defmodule BlockScoutWeb.API.V2.TransactionController do
       filter_options: 2,
       method_filter_options: 1,
       token_transfers_types_options: 1,
-      type_filter_options: 1
+      type_filter_options: 1,
+      ext_type_filter_options: 1
     ]
 
   import Explorer.MicroserviceInterfaces.BENS, only: [maybe_preload_ens: 1, maybe_preload_ens_to_transaction: 1]
@@ -147,6 +148,7 @@ defmodule BlockScoutWeb.API.V2.TransactionController do
       |> Keyword.merge(paging_options(params, filter_options))
       |> Keyword.merge(method_filter_options(params))
       |> Keyword.merge(type_filter_options(params))
+      |> Keyword.merge(ext_type_filter_options(params))
       |> Keyword.merge(@api_true)
 
     transactions_plus_one = Chain.recent_transactions(full_options, filter_options)
