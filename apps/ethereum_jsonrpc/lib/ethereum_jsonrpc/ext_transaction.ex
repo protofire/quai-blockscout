@@ -1,7 +1,7 @@
 defmodule EthereumJSONRPC.ExtTransaction do
   @moduledoc false
 
-  import EthereumJSONRPC, only: [quantity_to_integer: 1, integer_to_quantity: 1, request: 1]
+  import EthereumJSONRPC, only: [quantity_to_integer: 1]
 
   alias EthereumJSONRPC
   alias Explorer.Chain.ExtTransaction
@@ -83,9 +83,6 @@ defmodule EthereumJSONRPC.ExtTransaction do
     {key, quantity_to_integer(quantity)}
   end
 
-  @doc """
-  Fields ignored for now: [accessList, transactionIndex]
-  """
   defp entry_to_elixir(_) do
     {nil, nil}
   end

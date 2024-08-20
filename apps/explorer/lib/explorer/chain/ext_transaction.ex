@@ -5,8 +5,6 @@ defmodule Explorer.Chain.ExtTransaction do
 
   require Logger
 
-  alias Ecto.Changeset
-
   alias Explorer.Chain.{
     Address,
     Block,

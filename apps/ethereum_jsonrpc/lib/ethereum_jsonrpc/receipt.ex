@@ -385,17 +385,6 @@ defmodule EthereumJSONRPC.Receipt do
     {:ok, {key, nil}}
   end
 
-  # Helper function to transform etxs
-  defp transform_etxs(etxs_map) when is_map(etxs_map) do
-    etxs_map
-    |> Enum.map(fn {key, value} -> {key, transform_etxs_field(value)} end)
-    |> Enum.into(%{})
-  end
-
-  defp transform_etxs_field(value) do
-    value
-  end
-
   # Optimism specific transaction receipt fields
   defp entry_to_elixir({key, _}) when key in ~w(depositNonce depositReceiptVersion) do
     :ignore
@@ -409,5 +398,16 @@ defmodule EthereumJSONRPC.Receipt do
 
   defp entry_to_elixir({key, value}) do
     {:error, {:unknown_key, %{key: key, value: value}}}
+  end
+
+  # Helper function to transform etxs
+  defp transform_etxs(etxs_map) when is_map(etxs_map) do
+    etxs_map
+    |> Enum.map(fn {key, value} -> {key, transform_etxs_field(value)} end)
+    |> Enum.into(%{})
+  end
+
+  defp transform_etxs_field(value) do
+    value
   end
 end

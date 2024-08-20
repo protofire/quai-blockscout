@@ -4,7 +4,7 @@ defmodule EthereumJSONRPC.Blocks do
   and [`eth_getBlockByNumber`](https://github.com/ethereum/wiki/wiki/JSON-RPC#eth_getblockbynumber) from batch requests.
   """
 
-  alias EthereumJSONRPC.{Block, Transactions, ExtTransactions, Transport, Uncles, Withdrawals}
+  alias EthereumJSONRPC.{Block, Transactions, Transport, Uncles, Withdrawals}
 
   @type elixir :: [Block.elixir()]
   @type params :: [Block.params()]

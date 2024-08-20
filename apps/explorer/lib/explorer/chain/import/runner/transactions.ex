@@ -8,11 +8,10 @@ defmodule Explorer.Chain.Import.Runner.Transactions do
   import Ecto.Query, only: [from: 2]
 
   alias Ecto.{Multi, Repo}
-  alias Explorer.Chain.{Block, Hash, Import, TokenTransfer, Transaction, ExtTransaction}
+  alias Explorer.Chain.{Block, Hash, Import, TokenTransfer, Transaction}
   alias Explorer.Chain.Import.Runner.TokenTransfers
   alias Explorer.Prometheus.Instrumenter
   alias Explorer.Utility.MissingRangesManipulator
-  alias Explorer.Chain.Transaction.Status
 
   @behaviour Import.Runner
 

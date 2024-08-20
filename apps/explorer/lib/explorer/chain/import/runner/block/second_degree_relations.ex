@@ -5,7 +5,7 @@ defmodule Explorer.Chain.Import.Runner.Block.SecondDegreeRelations do
 
   require Ecto.Query
 
-  import Ecto.Query, only: [from: 2]
+  # import Ecto.Query, only: [from: 2]
 
   alias Ecto.{Changeset, Multi, Repo}
   alias Explorer.Chain.{Block, Hash, Import}
@@ -65,13 +65,14 @@ defmodule Explorer.Chain.Import.Runner.Block.SecondDegreeRelations do
         }) ::
           {:ok, nil | %{nephew_hash: Hash.Full.t(), uncle_hash: Hash.Full.t(), index: non_neg_integer()}}
           | {:error, [Changeset.t()]}
-  defp insert(repo, changes_list, %{timeout: timeout} = options) when is_atom(repo) and is_list(changes_list) do
-#    on_conflict = Map.get_lazy(options, :on_conflict, &default_on_conflict/0)
+  defp insert(repo, changes_list, %{timeout: timeout} = _options) when is_atom(repo) and is_list(changes_list) do
+    #    on_conflict = Map.get_lazy(options, :on_conflict, &default_on_conflict/0)
 
     # Enforce SeconDegreeRelation ShareLocks order (see docs: sharelocks.md)
     ordered_changes_list =
       changes_list
-      |> Enum.sort_by(&{&1.nephew_hash}) # , &1.uncle_hash
+      # , &1.uncle_hash
+      |> Enum.sort_by(&{&1.nephew_hash})
       |> Enum.dedup()
 
     Import.insert_changes_list(repo, ordered_changes_list,
@@ -83,23 +84,23 @@ defmodule Explorer.Chain.Import.Runner.Block.SecondDegreeRelations do
     )
   end
 
-  defp default_on_conflict do
-    from(
-      block_second_degree_relation in Block.SecondDegreeRelation,
-      update: [
-        set: [
-          uncle_fetched_at:
-            fragment("LEAST(?, EXCLUDED.uncle_fetched_at)", block_second_degree_relation.uncle_fetched_at),
-          index: fragment("EXCLUDED.index")
-        ]
-      ],
-      where:
-        fragment(
-          "(LEAST(?, EXCLUDED.uncle_fetched_at), EXCLUDED.index) IS DISTINCT FROM (?, ?)",
-          block_second_degree_relation.uncle_fetched_at,
-          block_second_degree_relation.uncle_fetched_at,
-          block_second_degree_relation.index
-        )
-    )
-  end
+  # defp default_on_conflict do
+  #   from(
+  #     block_second_degree_relation in Block.SecondDegreeRelation,
+  #     update: [
+  #       set: [
+  #         uncle_fetched_at:
+  #           fragment("LEAST(?, EXCLUDED.uncle_fetched_at)", block_second_degree_relation.uncle_fetched_at),
+  #         index: fragment("EXCLUDED.index")
+  #       ]
+  #     ],
+  #     where:
+  #       fragment(
+  #         "(LEAST(?, EXCLUDED.uncle_fetched_at), EXCLUDED.index) IS DISTINCT FROM (?, ?)",
+  #         block_second_degree_relation.uncle_fetched_at,
+  #         block_second_degree_relation.uncle_fetched_at,
+  #         block_second_degree_relation.index
+  #       )
+  #   )
+  # end
 end

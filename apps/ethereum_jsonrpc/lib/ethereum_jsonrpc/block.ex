@@ -906,12 +906,6 @@ defmodule EthereumJSONRPC.Block do
     Enum.into(block, %{}, &entry_to_elixir(&1, block))
   end
 
-  defp entry_to_elixir({key, quantity}, _block)
-       when key in ~w(difficulty gasLimit gasUsed minimumGasPrice baseFeePerGas number size cumulativeDifficulty totalDifficulty paidFees minimumGasPrice blobGasUsed excessBlobGas efficiencyScore thresholdCount expansionNumber uncledS nonce) and
-              not is_nil(quantity) do
-    {key, quantity_to_integer(quantity)}
-  end
-
   # Size and totalDifficulty may be `nil` for uncle blocks
   defp entry_to_elixir({key, nil}, _block) when key in ~w(size totalDifficulty) do
     {key, nil}
@@ -961,12 +955,10 @@ defmodule EthereumJSONRPC.Block do
     {"woHeader", Enum.into(woHeader, %{}, &entry_to_elixir(&1, woHeader))}
   end
 
-  defp entry_to_elixir({key, quantity}) do
-    if is_list(quantity) do
-      {key, quantity |> Enum.map(&quantity_to_integer/1)}
-    else
-      {key, quantity_to_integer(quantity)}
-    end
+  defp entry_to_elixir({key, quantity}, _block)
+       when key in ~w(difficulty gasLimit gasUsed minimumGasPrice baseFeePerGas number size cumulativeDifficulty totalDifficulty paidFees minimumGasPrice blobGasUsed excessBlobGas efficiencyScore thresholdCount expansionNumber uncledS nonce) and
+              not is_nil(quantity) do
+    {key, quantity_to_integer(quantity)}
   end
 
   # bitcoinMergedMiningCoinbaseTransaction bitcoinMergedMiningHeader bitcoinMergedMiningMerkleProof hashForMergedMining - RSK https://github.com/blockscout/blockscout/pull/2934

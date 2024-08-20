@@ -267,6 +267,9 @@ defmodule EthereumJSONRPC.Transaction do
   @doc """
   Quai Ledger transactions
   Type = 0
+
+  Etx Transactions
+  Type = 1 | 2
   """
   def do_elixir_to_params(
         %{
@@ -319,10 +322,6 @@ defmodule EthereumJSONRPC.Transaction do
     ])
   end
 
-  @doc """
-  Etx Transactions
-  Type = 1 | 2
-  """
   def do_elixir_to_params(
         %{
           "type" => 1 = type,
@@ -858,10 +857,6 @@ defmodule EthereumJSONRPC.Transaction do
   defp entry_to_elixir({"data", value}),
     do: {"input", value}
 
-  defp entry_to_elixir(tuple, _transaction) do
-    entry_to_elixir(tuple)
-  end
-
   defp entry_to_elixir({key, quantity})
        when key in ~w(gas gasPrice nonce r s standardV v value type maxPriorityFeePerGas maxFeePerGas maxFeePerBlobGas etxIndex) and
               quantity != nil do
@@ -905,6 +900,10 @@ defmodule EthereumJSONRPC.Transaction do
 
   defp entry_to_elixir(_) do
     {nil, nil}
+  end
+
+  defp entry_to_elixir(tuple, _transaction) do
+    entry_to_elixir(tuple)
   end
 
   defp put_if_present(transaction, result, keys) do

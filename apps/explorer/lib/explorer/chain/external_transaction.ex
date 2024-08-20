@@ -3,9 +3,9 @@ defmodule Explorer.Chain.ExternalTransaction do
 
   use Explorer.Schema
 
-  alias Explorer.Chain.{Address, Block, Data, Gas, Hash, PendingBlockOperation, Transaction, Wei}
-  alias Explorer.Chain.ExternalTransaction.{Action, CallType, Result, Type}
-  alias Explorer.Chain.Transaction.{Fork, Status}
+  alias Explorer.Chain.{Address, Block, Data, Gas, Hash, Wei}
+  alias Explorer.Chain.ExternalTransaction.{Action, Result}
+  alias Explorer.Chain.Transaction.Status
   @type wei_per_gas :: Wei.t()
   @type transaction_index :: non_neg_integer()
   @type r :: Decimal.t()
@@ -424,38 +424,6 @@ defmodule Explorer.Chain.ExternalTransaction do
     |> cast(attrs, ~w(block_hash index block_number )a)
     |> validate_required(~w(block_hash index)a)
     |> foreign_key_constraint(:block_hash)
-  end
-
-  defp validate_disallowed(changeset, field, named_arguments) when is_atom(field) do
-    case get_field(changeset, field) do
-      nil -> changeset
-      _ -> add_error(changeset, field, Keyword.get(named_arguments, :message, "can't be present"))
-    end
-  end
-
-  defp validate_disallowed(changeset, fields, named_arguments) when is_list(fields) do
-    Enum.reduce(fields, changeset, fn field, acc_changeset ->
-      validate_disallowed(acc_changeset, field, named_arguments)
-    end)
-  end
-
-  # Validates that :call `type` changeset either has an `error` or both `gas_used` and `output`
-  defp validate_call_error_or_result(changeset) do
-    case get_field(changeset, :error) do
-      nil -> validate_required(changeset, [:gas_used, :output], message: "can't be blank for successful call")
-      _ -> validate_disallowed(changeset, [:output], message: "can't be present for failed call")
-    end
-  end
-
-  @create_success_fields ~w(created_contract_code created_contract_address_hash gas_used)a
-
-  # Validates that :create `type` changeset either has an `:error` or both `:created_contract_code` and
-  # `:created_contract_address_hash`
-  defp validate_create_error_or_result(changeset) do
-    case get_field(changeset, :error) do
-      nil -> validate_required(changeset, @create_success_fields, message: "can't be blank for successful create")
-      _ -> validate_disallowed(changeset, @create_success_fields, message: "can't be present for failed create")
-    end
   end
 
   @doc """

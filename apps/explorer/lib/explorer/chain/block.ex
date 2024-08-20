@@ -7,7 +7,6 @@ defmodule Explorer.Chain.Block.Schema do
     Hash,
     PendingBlockOperation,
     Transaction,
-    ExtTransaction,
     Wei,
     Withdrawal
   }

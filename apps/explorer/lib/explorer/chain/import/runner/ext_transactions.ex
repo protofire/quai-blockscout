@@ -3,10 +3,8 @@ defmodule Explorer.Chain.Import.Runner.ExtTransactions do
 
   require Ecto.Query
 
-  import Ecto.Query, only: [from: 2]
-
   alias Ecto.{Multi, Repo}
-  alias Explorer.Chain.{Block, Hash, Import, ExtTransaction}
+  alias Explorer.Chain.{Hash, Import, ExtTransaction}
   alias Explorer.Prometheus.Instrumenter
 
   @behaviour Import.Runner
@@ -31,7 +29,7 @@ defmodule Explorer.Chain.Import.Runner.ExtTransactions do
   end
 
   @impl Import.Runner
-  def run(multi, changes_list, %{timestamps: timestamps} = options) do
+  def run(multi, changes_list, options) do
     multi
     |> Multi.run(:insert_ext_transactions, fn repo, _ ->
       Instrumenter.block_import_stage_runner(
@@ -56,7 +54,7 @@ defmodule Explorer.Chain.Import.Runner.ExtTransactions do
          changes_list,
          %{
            timestamps: timestamps
-         } = options
+         } = _options
        )
        when is_list(changes_list) do
     Import.insert_changes_list(
