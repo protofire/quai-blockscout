@@ -49,6 +49,7 @@ defmodule Indexer.Fetcher.CoinBalance.Helper do
     Logger.metadata(count: unique_entry_count)
 
     unique_filtered_entries
+    |> Enum.filter(fn {_address_hash_bytes, block_number} -> !is_nil(block_number) end)
     |> Enum.map(&entry_to_params/1)
     |> EthereumJSONRPC.fetch_balances(json_rpc_named_arguments)
     |> case do
