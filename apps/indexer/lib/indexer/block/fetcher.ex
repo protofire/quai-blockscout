@@ -142,6 +142,7 @@ defmodule Indexer.Block.Fetcher do
              blocks_params: blocks_params,
              transactions_without_receipts_params: transactions_params_without_receipts,
              transactions_params: transactions_params,
+             utxo_transactions_params: utxo_transactions_params,
              withdrawals_params: withdrawals_params,
              block_second_degree_relations_params: block_second_degree_relations_params,
              errors: blocks_errors
@@ -182,7 +183,7 @@ defmodule Indexer.Block.Fetcher do
              mint_transfers: mint_transfers,
              shibarium_bridge_operations: shibarium_bridge_operations,
              token_transfers: token_transfers,
-             transactions: transactions_with_receipts,
+             transactions: transactions_with_receipts ++ utxo_transactions_params,
              transaction_actions: transaction_actions,
              withdrawals: withdrawals_params,
              polygon_zkevm_bridge_operations: polygon_zkevm_bridge_operations

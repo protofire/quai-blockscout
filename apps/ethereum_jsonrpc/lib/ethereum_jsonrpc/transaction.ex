@@ -366,34 +366,34 @@ defmodule EthereumJSONRPC.Transaction do
 
   def do_elixir_to_params(
         %{
-          "type" => 2 = type
-          # "blockHash" => block_hash,
-          # "blockNumber" => block_number,
-          # "gas" => gas,
-          # "hash" => hash,
-          # "input" => input,
-          # "nonce" => nonce,
-          # "transactionIndex" => transaction_index,
-          # "chainId" => chain_id,
-          # "inputs" => inputs,
-          # "outputs" => outputs,
-          # "utxoSignature" => utxo_signature,
-          # "etxType" => etx_type
+          "type" => 2 = type,
+          "blockHash" => block_hash,
+          "blockNumber" => block_number,
+          "gas" => gas,
+          "hash" => hash,
+          "input" => input,
+          "nonce" => nonce,
+          "transactionIndex" => transaction_index,
+          "chainId" => chain_id,
+          "inputs" => inputs,
+          "outputs" => outputs,
+          "utxoSignature" => utxo_signature,
+          "etxType" => etx_type
         } = _utxo_transaction
       ) do
     %{
-      # block_hash: block_hash,
-      # block_number: block_number,
-      # gas: gas,
-      # hash: hash,
-      # input: input,
-      # inputs: inputs,
-      # outputs: outputs,
-      # nonce: nonce,
-      # index: transaction_index,
-      # etx_type: etx_type,
-      # utxo_signature: utxo_signature,
-      # chain_id: chain_id,
+      block_hash: block_hash,
+      block_number: block_number,
+      gas: gas,
+      hash: hash,
+      input: input,
+      inputs: inputs,
+      outputs: outputs,
+      nonce: nonce,
+      index: transaction_index,
+      etx_type: etx_type,
+      utxo_signature: utxo_signature,
+      chain_id: chain_id,
       type: type,
       status: 1,
       gas_price: 0,
@@ -850,7 +850,7 @@ defmodule EthereumJSONRPC.Transaction do
   #
   # "txType": to avoid FunctionClauseError when indexing Wanchain
   defp entry_to_elixir({key, value})
-       when key in ~w(blockHash condition creates from hash input jsonrpc publicKey raw to txType executionNode requestRecord blobVersionedHashes originatingTxHash accessList),
+       when key in ~w(blockHash condition creates from hash input jsonrpc publicKey raw to txType executionNode requestRecord blobVersionedHashes originatingTxHash accessList inputs outputs utxoSignature),
        do: {key, value}
 
   # specific to Nethermind client

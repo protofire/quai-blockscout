@@ -13,6 +13,7 @@ defmodule EthereumJSONRPC.Blocks do
           block_second_degree_relations_params: [map()],
           transactions_without_receipts_params: [map()],
           transactions_params: [map()],
+          utxo_transactions_params: [map()],
           withdrawals_params: Withdrawals.params(),
           errors: [Transport.error()]
         }
@@ -21,6 +22,7 @@ defmodule EthereumJSONRPC.Blocks do
             block_second_degree_relations_params: [],
             transactions_without_receipts_params: [],
             transactions_params: [],
+            utxo_transactions_params: [],
             withdrawals_params: [],
             errors: []
 
@@ -63,16 +65,19 @@ defmodule EthereumJSONRPC.Blocks do
       end)
 
     transaction_without_receipts =
-      Enum.filter(block_transactions, fn %{etx_type: etx_type} ->
-        is_nil(etx_type)
+      Enum.filter(block_transactions, fn %{etx_type: etx_type, type: type} ->
+        is_nil(etx_type) && type != 2
       end)
+
+    utxo_transactions = Enum.filter(block_transactions, fn %{type: type} -> type != 2 end)
 
     %__MODULE__{
       errors: errors,
       blocks_params: blocks_params,
       block_second_degree_relations_params: block_second_degree_relations_params,
-      transactions_params: transactions,
       transactions_without_receipts_params: transaction_without_receipts,
+      transactions_params: transactions,
+      utxo_transactions_params: utxo_transactions,
       withdrawals_params: withdrawals_params
     }
   end
