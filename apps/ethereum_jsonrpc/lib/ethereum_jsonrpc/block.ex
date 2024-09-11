@@ -667,8 +667,19 @@ defmodule EthereumJSONRPC.Block do
   """
   @spec elixir_to_transactions(elixir) :: Transactions.elixir()
   def elixir_to_transactions(elixir) do
-    # Return all transaction or empty list
+    block_hash = Map.get(elixir, "hash", nil)
+    block_number = Map.get(elixir, "woHeader", %{}) |> Map.get("number", nil)
+
     Map.get(elixir, "transactions", [])
+    |> Enum.map(fn tx ->
+      if tx["type"] == 2 do
+        tx
+        |> Map.put("blockNumber", block_number)
+        |> Map.put("blockHash", block_hash)
+      else
+        tx
+      end
+    end)
   end
 
   @spec elixir_to_ext_transactions(elixir) :: Transactions.elixir()

@@ -69,7 +69,7 @@ defmodule EthereumJSONRPC.Blocks do
         is_nil(etx_type) && type != 2
       end)
 
-    utxo_transactions = Enum.filter(block_transactions, fn %{type: type} -> type != 2 end)
+    utxo_transactions = Enum.filter(block_transactions, fn %{type: type} -> type == 2 end)
 
     %__MODULE__{
       errors: errors,

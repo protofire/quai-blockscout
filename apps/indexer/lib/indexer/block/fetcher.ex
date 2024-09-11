@@ -193,6 +193,7 @@ defmodule Indexer.Block.Fetcher do
              beneficiary_params: MapSet.to_list(beneficiary_params_set),
              blocks_params: blocks,
              logs_params: logs,
+             # should include utxo?
              transactions_params: transactions_with_receipts,
              withdrawals: withdrawals_params
            }
@@ -216,13 +217,13 @@ defmodule Indexer.Block.Fetcher do
            logs: %{params: logs},
            token_transfers: %{params: token_transfers},
            tokens: %{params: tokens},
-           transactions: %{params: transactions_with_receipts},
+           transactions: %{params: transactions_with_receipts ++ utxo_transactions_params},
            withdrawals: %{params: withdrawals_params},
            token_instances: %{params: token_instances}
          },
          chain_type_import_options = %{
            transactions_with_receipts: transactions_with_receipts,
-           transactions_params: transactions_params,
+           transactions_params: transactions_params ++ utxo_transactions_params,
            optimism_withdrawals: optimism_withdrawals,
            polygon_edge_withdrawals: polygon_edge_withdrawals,
            polygon_edge_deposit_executes: polygon_edge_deposit_executes,
