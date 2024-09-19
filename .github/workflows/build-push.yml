@@ -1,7 +1,7 @@
 on:
   push:
     branches:
-      - 'staging-goldenage'
+      - 'staging'
 
 name: Docker build and push
 
@@ -30,8 +30,8 @@ jobs:
 
       - name: Build and push
         run: |
-          docker build -t ${{ env.IMAGE_REPOSITORY }}:${{ env.IMAGE_TAG }} \
-          -t ${{ env.IMAGE_REPOSITORY }}:latest \
+          docker build -t ${{ env.IMAGE_REPOSITORY }}:staging-${{ env.IMAGE_TAG }} \
+          -t ${{ env.IMAGE_REPOSITORY }}:staging-latest \
           --build-arg BLOCKSCOUT_VERSION=v${{ env.BACKEND_VERSION }} \
           --build-arg RELEASE_VERSION=${{ env.BACKEND_VERSION }} \
           --build-arg DISABLE_WEBAPP=true \
