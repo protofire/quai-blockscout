@@ -199,7 +199,7 @@ defmodule EthereumJSONRPC.Contract do
 
     full_params = %{
       id: id,
-      method: "eth_call",
+      method: "quai_call",
       params: [params, block]
     }
 
@@ -214,7 +214,7 @@ defmodule EthereumJSONRPC.Contract do
       end
 
     result =
-      %{id: 0, method: "eth_getStorageAt", params: [contract_address, storage_pointer, block]}
+      %{id: 0, method: "quai_getStorageAt", params: [contract_address, storage_pointer, block]}
       |> request()
       |> json_rpc(json_rpc_named_arguments)
 
