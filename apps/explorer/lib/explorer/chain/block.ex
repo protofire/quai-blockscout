@@ -21,31 +21,35 @@ defmodule Explorer.Chain.Block.Schema do
                               field(:manifest_hash_full, {:array, Hash.Full})
                               field(:number_full, {:array, :binary})
                               field(:parent_hash_full, {:array, Hash.Full})
-                              field(:ext_rollup_root, Hash.Full)
+                              field(:etx_rollup_root, Hash.Full)
                               field(:transactions_root, Hash.Full)
-                              field(:ext_transactions_root, Hash.Full)
+                              field(:outbound_etxs_root, Hash.Full)
                               field(:sub_manifest, {:array, Hash.Full})
                               field(:location, :string)
-                              field(:is_prime_coincident, :boolean)
-                              field(:is_region_coincident, :boolean)
                               field(:total_entropy, :binary)
                               field(:parent_entropy, :binary)
-                              field(:parent_delta_s, :binary)
                               field(:parent_entropy_full, {:array, :binary})
-                              field(:parent_delta_s_full, {:array, :binary})
-                              # Golden Age
+                              field(:parent_delta_entropy, :binary)
+                              field(:parent_delta_entropy_full, {:array, :binary})
                               field(:evm_root, Hash.Full)
                               field(:utxo_root, Hash.Full)
                               field(:etx_set_root, Hash.Full)
-                              field(:parent_uncled_sub_delta_s, {:array, :binary})
+                              field(:parent_uncled_delta_entropy, {:array, :binary})
                               field(:efficiency_score, :decimal)
                               field(:threshold_count, :decimal)
                               field(:expansion_number, :decimal)
                               field(:etx_eligible_slices, Hash.Full)
-                              field(:prime_terminus, Hash.Full)
+                              field(:prime_terminus_hash, Hash.Full)
                               field(:interlink_root_hash, Hash.Full)
-                              field(:uncled_s, {:array, :binary})
+                              field(:uncled_entropy, :decimal)
                               field(:interlink_hashes, {:array, Hash.Full})
+                              field(:quai_state_size, :decimal)
+                              field(:state_limit, :decimal)
+                              field(:state_used, :decimal)
+                              field(:exchange_rate, :decimal)
+                              field(:quai_to_qi, :decimal)
+                              field(:qi_to_quai, :decimal)
+                              field(:secondary_coinbase, Hash.Address)
                               field(:wo_header, :map)
                             end,
                             2
@@ -152,7 +156,7 @@ defmodule Explorer.Chain.Block do
                   |> (&(case Application.compile_env(:explorer, :chain_type) do
                           "quai" ->
                             &1 ++
-                              ~w(manifest_hash_full number_full parent_hash_full ext_rollup_root transactions_root ext_transactions_root sub_manifest location is_prime_coincident is_region_coincident total_entropy parent_entropy parent_delta_s parent_entropy_full parent_delta_s_full evm_root utxo_root etx_set_root parent_uncled_sub_delta_s efficiency_score threshold_count expansion_number etx_eligible_slices prime_terminus interlink_root_hash uncled_s interlink_hashes wo_header)a
+                              ~w(manifest_hash_full number_full parent_hash_full etx_rollup_root transactions_root outbound_etxs_root sub_manifest location total_entropy parent_entropy parent_entropy_full evm_root utxo_root etx_set_root parent_uncled_delta_entropy efficiency_score threshold_count expansion_number etx_eligible_slices prime_terminus_hash interlink_root_hash uncled_entropy interlink_hashes quai_state_size state_limit state_used exchange_rate quai_to_qi qi_to_quai secondary_coinbase wo_header parent_delta_entropy_full parent_delta_entropy)a
 
                           "rsk" ->
                             &1 ++
