@@ -620,10 +620,10 @@ defmodule EthereumJSONRPC do
   def etx_to_atom("0x1"), do: :coinbase
   def etx_to_atom("coinbase"), do: :coinbase
 
-  def etx_to_atom("0x0"), do: :conversion
+  def etx_to_atom("0x2"), do: :conversion
   def etx_to_atom("conversion"), do: :conversion
 
-  def etx_to_atom("0x2"), do: :external
+  def etx_to_atom("0x0"), do: :external
   def etx_to_atom("etx"), do: :external
 
   def etx_to_atom(_), do: nil
