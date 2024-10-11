@@ -59,14 +59,14 @@ defmodule EthereumJSONRPC.Blocks do
     withdrawals_params = Withdrawals.elixir_to_params(elixir_withdrawals)
     block_transactions = Transactions.elixir_to_params(Enum.uniq(elixir_transactions))
 
-    transactions =
-      Enum.filter(block_transactions, fn %{etx_type: etx_type} ->
-        !is_nil(etx_type)
+    etx_transactions =
+      Enum.filter(block_transactions, fn tx ->
+        Map.has_key?(tx, :etx_type)
       end)
 
     transaction_without_receipts =
-      Enum.filter(block_transactions, fn %{etx_type: etx_type, type: type} ->
-        is_nil(etx_type) && type != 2
+      Enum.filter(block_transactions, fn %{type: type} = tx ->
+        !Map.has_key?(tx, :etx_type) && type != 2
       end)
 
     utxo_transactions = Enum.filter(block_transactions, fn %{type: type} -> type == 2 end)
@@ -76,7 +76,7 @@ defmodule EthereumJSONRPC.Blocks do
       blocks_params: blocks_params,
       block_second_degree_relations_params: block_second_degree_relations_params,
       transactions_without_receipts_params: transaction_without_receipts,
-      transactions_params: transactions,
+      transactions_params: etx_transactions,
       utxo_transactions_params: utxo_transactions,
       withdrawals_params: withdrawals_params
     }

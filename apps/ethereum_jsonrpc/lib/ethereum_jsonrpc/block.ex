@@ -4,7 +4,7 @@ defmodule EthereumJSONRPC.Block do
   and [`eth_getBlockByNumber`](https://github.com/ethereum/wiki/wiki/JSON-RPC#eth_getblockbynumber).
   """
 
-  @quai_attrs ~w(manifestHash number parentHash parentEntropy parentDeltaS)a
+  @quai_attrs ~w(manifestHash number parentHash parentEntropy parentDeltaEntropy)a
   import EthereumJSONRPC, only: [quantity_to_integer: 1, timestamp_to_datetime: 1]
 
   alias EthereumJSONRPC.{Transactions, Uncles, Withdrawals}
@@ -24,26 +24,19 @@ defmodule EthereumJSONRPC.Block do
     end)
   end
 
-  # returns a tuple of the form {is_prime_coincident, is_region_coincident}
-  def is_coincident(order) do
-    node_ctx = String.to_integer(System.get_env("CHAIN_INDEX"))
-
-    {node_ctx - 1 > order, node_ctx > order}
-  end
-
   case Application.compile_env(:explorer, :chain_type) do
     "quai" ->
       @chain_type_fields quote(
                            do: [
                              total_difficulty: non_neg_integer(),
-                             ext_rollup_root: EthereumJSONRPC.hash(),
-                             ext_transactions_root: EthereumJSONRPC.hash(),
+                             etx_rollup_root: EthereumJSONRPC.hash(),
+                             outbound_etxs_root: EthereumJSONRPC.hash(),
                              location: [EthereumJSONRPC.data()],
                              manifest_hash: EthereumJSONRPC.hash(),
                              manifest_hash_full: [EthereumJSONRPC.hash()],
                              number_full: [EthereumJSONRPC.data()],
                              order: non_neg_integer(),
-                             parent_delta_s: EthereumJSONRPC.data(),
+                             parent_delta_entropy: EthereumJSONRPC.data(),
                              parent_delta_s_full: [EthereumJSONRPC.data()],
                              parent_entropy: EthereumJSONRPC.data(),
                              parent_entropy_full: [EthereumJSONRPC.data()],
@@ -170,9 +163,7 @@ defmodule EthereumJSONRPC.Block do
       %{"header" => header} ->
         {:ok,
          block
-         # Hash inside of the header is a "salt" to avoid colision of the actual block hash
-         # Deleting it.
-         |> Map.merge(Map.delete(header, "hash"))
+         |> Map.merge(header)
          |> map_keys()}
 
       _ ->
@@ -345,48 +336,114 @@ defmodule EthereumJSONRPC.Block do
 
   defp do_elixir_to_params(
          %{
+           "etxEligibleSlices" => etx_eligible_slices,
+           "totalEntropy" => total_entropy,
+           "uncledEntropy" => uncled_entropy,
+           "numberFull" => number_full,
+           "stateLimit" => state_limit,
+           "interlinkRootHash" => interlink_root_hash,
+           "quaiToQi" => quai_to_qi,
+           "qiToQuai" => qi_to_quai,
+           "parentEntropy" => parent_entropy,
+           "parentEntropyFull" => parent_entropy_full,
+           "quaiStateSize" => quai_state_size,
+           "efficiencyScore" => efficiency_score,
+           "utxoRoot" => utxo_root,
+           "expansionNumber" => expansion_number,
+           "stateUsed" => state_used,
+           "manifestHash" => manifest_hash,
+           "manifestHashFull" => manifest_hash_full,
+           "exchangeRate" => exchange_rate,
+           "interlinkHashes" => interlink_hashes,
+           "subManifest" => sub_manifest,
+           "secondaryCoinbase" => secondary_coinbase,
+           "etxSetRoot" => etx_set_root,
+           "etxRollupRoot" => etx_rollup_root,
+           "parentHashFull" => parent_hash_full,
+           "parentUncledDeltaEntropy" => parent_uncled_delta_entropy,
+           "thresholdCount" => threshold_count,
+           "outboundEtxsRoot" => outbound_etxs_root,
            "baseFeePerGas" => base_fee_per_gas,
            "extraData" => extra_data,
            "gasLimit" => gas_limit,
            "gasUsed" => gas_used,
            "hash" => hash,
            "receiptsRoot" => receipts_root,
-           "sha3Uncles" => sha3_uncles,
+           "uncleHash" => uncle_hash,
            "size" => size,
-           "evmRoot" => state_root,
+           "evmRoot" => evm_root,
            "transactions" => transactions,
            "transactionsRoot" => transactions_root,
            "uncles" => uncles,
+           "parentDeltaEntropy" => parent_delta_entropy,
+           "parentDeltaEntropyFull" => parent_delta_entropy_full,
+           "primeTerminusHash" => prime_terminus_hash,
            "woHeader" => %{
-             "time" => timestamp,
+             "timestamp" => timestamp,
              "mixHash" => mix_hash,
              "difficulty" => difficulty,
              "number" => number,
              "parentHash" => parent_hash,
              "nonce" => nonce,
-             "coinbase" => miner_hash
+             "primaryCoinbase" => primary_coinbase,
+             "location" => location
            }
          } = _elixir
        ) do
     %{
+      # Quai Network
+      manifest_hash: manifest_hash,
+      manifest_hash_full: manifest_hash_full,
+      number: number,
+      number_full: number_full,
+      parent_hash: parent_hash,
+      parent_hash_full: parent_hash_full,
+      etx_rollup_root: etx_rollup_root,
+      transactions_root: transactions_root,
+      outbound_etxs_root: outbound_etxs_root,
+      sub_manifest: sub_manifest,
+      location: location,
+      total_entropy: total_entropy,
+      parent_entropy: parent_entropy,
+      parent_entropy_full: parent_entropy_full,
+      parent_delta_entropy: parent_delta_entropy,
+      parent_delta_entropy_full: parent_delta_entropy_full,
+      evm_root: evm_root,
+      utxo_root: utxo_root,
+      etx_set_root: etx_set_root,
+      parent_uncled_delta_entropy: parent_uncled_delta_entropy,
+      efficiency_score: efficiency_score,
+      threshold_count: threshold_count,
+      expansion_number: expansion_number,
+      etx_eligible_slices: etx_eligible_slices,
+      prime_terminus_hash: prime_terminus_hash,
+      interlink_root_hash: interlink_root_hash,
+      uncled_entropy: uncled_entropy,
+      interlink_hashes: interlink_hashes,
+      quai_state_size: quai_state_size,
+      state_limit: state_limit,
+      state_used: state_used,
+      exchange_rate: exchange_rate,
+      quai_to_qi: quai_to_qi,
+      qi_to_quai: qi_to_quai,
+      secondary_coinbase: secondary_coinbase,
+
+      # Defaults
       base_fee_per_gas: base_fee_per_gas,
       difficulty: difficulty,
       extra_data: extra_data,
       gas_limit: gas_limit,
       gas_used: gas_used,
       hash: hash,
-      miner_hash: miner_hash,
+      miner_hash: primary_coinbase,
       mix_hash: mix_hash,
       nonce: nonce,
-      number: number,
-      parent_hash: parent_hash,
       receipts_root: receipts_root,
-      sha3_uncles: sha3_uncles,
+      uncle_hash: uncle_hash,
       size: size,
-      state_root: state_root,
-      transactions: transactions,
-      transactions_root: transactions_root,
       timestamp: timestamp,
+      state_root: evm_root,
+      transactions: transactions,
       uncles: uncles
     }
   end
@@ -527,33 +584,32 @@ defmodule EthereumJSONRPC.Block do
       "quai" ->
         params
         |> Map.merge(%{
-          ext_rollup_root: Map.get(elixir, "extRollupRoot"),
-          ext_transactions_root: Map.get(elixir, "extTransactionsRoot"),
+          etx_rollup_root: Map.get(elixir, "etxRollupRoot"),
+          outbound_etxs_root: Map.get(elixir, "outboundEtxsRoot"),
           location: Map.get(elixir, "location"),
           manifest_hash: Map.get(elixir, "manifestHash"),
           manifest_hash_full: Map.get(elixir, "manifestHashFull", []),
           number_full: Map.get(elixir, "numberFull", []),
           order: Map.get(elixir, "order"),
-          parent_delta_s: Map.get(elixir, "parentDeltaS"),
-          parent_delta_s_full: Map.get(elixir, "parentDeltaSFull", []),
+          parent_delta_entropy: Map.get(elixir, "parentDeltaEntropy"),
+          parent_delta_entropy_full: Map.get(elixir, "parentDeltaEntropyFull", []),
           parent_entropy: Map.get(elixir, "parentEntropy"),
           parent_entropy_full: Map.get(elixir, "parentEntropyFull", []),
           parent_hash_full: Map.get(elixir, "parentHashFull", []),
           sub_manifest: Map.get(elixir, "subManifest", []),
           total_entropy: Map.get(elixir, "totalEntropy"),
           total_difficulty: Map.get(elixir, "totalDifficulty", 0),
-          # Golden Age
           evm_root: Map.get(elixir, "evmRoot"),
           utxo_root: Map.get(elixir, "utxoRoot"),
           etx_set_root: Map.get(elixir, "etxSetRoot"),
-          parent_uncled_sub_delta_s: Map.get(elixir, "parentUncledSubDeltaS"),
+          parent_uncled_delta_entropy: Map.get(elixir, "parentUncledDeltaEntropy"),
           efficiency_score: Map.get(elixir, "efficiencyScore", 0),
           threshold_count: Map.get(elixir, "thresholdCount", 0),
           expansion_number: Map.get(elixir, "expansionNumber", 0),
           etx_eligible_slices: Map.get(elixir, "etxEligibleSlices", []),
-          prime_terminus: Map.get(elixir, "primeTerminus", 0),
+          prime_terminus_hash: Map.get(elixir, "primeTerminusHash", 0),
           interlink_root_hash: Map.get(elixir, "interlinkRootHash", []),
-          uncled_s: Map.get(elixir, "uncledLogS", []),
+          uncled_entropy: Map.get(elixir, "uncledEntropy", []),
           interlink_hashes: Map.get(elixir, "interlinkHashes", []),
           wo_header: Map.get(elixir, "woHeader", %{})
         })
@@ -733,11 +789,6 @@ defmodule EthereumJSONRPC.Block do
 
   def elixir_to_uncles(%{"hash" => nephew_hash, "uncles" => [first | _] = uncles}) when is_map(first) do
     uncles
-    # Quai display workShares transactions inside of the uncles array
-    # we need to filter these tx out
-    |> Enum.filter(fn %{"workShare" => isWorkShare?} ->
-      !isWorkShare?
-    end)
     |> Enum.with_index()
     |> Enum.map(fn {work_object, index} ->
       %{
@@ -749,7 +800,7 @@ defmodule EthereumJSONRPC.Block do
     end)
   end
 
-  def elixir_to_uncles(%{"hash" => _nephew_hash, "uncles" => nil}), do: []
+  def elixir_to_uncles(%{"hash" => _nephew_hash, "uncles" => _}), do: []
 
   @doc """
   Get `t:EthereumJSONRPC.Withdrawals.elixir/0` from `t:elixir/0`.
@@ -926,12 +977,12 @@ defmodule EthereumJSONRPC.Block do
   # `t:EthereumJSONRPC.address/0` and `t:EthereumJSONRPC.hash/0` pass through as `Explorer.Chain` can verify correct
   # hash format
   defp entry_to_elixir({key, _} = entry, _block)
-       when key in ~w(author extraData hash logsBloom miner mixHash parentHash receiptsRoot sealFields sha3Uncles signature stateRoot step transactionsRoot uncles withdrawalsRoot bitcoinMergedMiningHeader bitcoinMergedMiningCoinbaseTransaction bitcoinMergedMiningMerkleProof hashForMergedMining manifestHashFull numberFull parentHashFull extRollupRoot extTransactionsRoot subManifest location totalEntropy parentEntropy parentDeltaS parentEntropyFull parentDeltaSFull evmRoot utxoRoot etxSetRoot etxEligibleSlices primeTerminus interlinkRootHash interlinkHashes manifestHash parentUncledS parentUncledSubDeltaS coinbase),
+       when key in ~w(author extraData hash logsBloom miner mixHash parentHash receiptsRoot sealFields uncleHash signature stateRoot step transactionsRoot uncles withdrawalsRoot bitcoinMergedMiningHeader bitcoinMergedMiningCoinbaseTransaction bitcoinMergedMiningMerkleProof hashForMergedMining manifestHashFull numberFull parentHashFull extRollupRoot extTransactionsRoot subManifest location totalEntropy parentEntropy parentDeltaS parentEntropyFull parentDeltaSFull evmRoot utxoRoot etxSetRoot etxRollupRoot etxEligibleSlices primeTerminus interlinkRootHash interlinkHashes manifestHash parentUncledDeltaEntropy secondaryCoinbase primaryCoinbase outboundEtxsRoot primeTerminusHash parentDeltaEntropy parentDeltaEntropyFull),
        do: entry
 
   # QUAI Golden Age. This function will handled by entry_to_elixir that execute entry_to_elixir for each element of the list
   # Then we will have "timestamp" field
-  defp entry_to_elixir({"time" = key, timestamp}, _block) do
+  defp entry_to_elixir({"timestamp" = key, timestamp}, _block) do
     {key, timestamp_to_datetime(timestamp)}
   end
 
@@ -940,11 +991,11 @@ defmodule EthereumJSONRPC.Block do
   end
 
   defp entry_to_elixir({"transactions" = key, transactions}, %{"woHeader" => woHeader}) when is_map(woHeader) do
-    {key, Transactions.to_elixir(transactions, timestamp_to_datetime(Map.get(woHeader, "time", 0)))}
+    {key, Transactions.to_elixir(transactions, timestamp_to_datetime(Map.get(woHeader, "timestamp", 0)))}
   end
 
   defp entry_to_elixir({"extTransactions" = key, transactions}, %{"woHeader" => woHeader}) when is_map(woHeader) do
-    {key, Transactions.to_elixir(transactions, timestamp_to_datetime(Map.get(woHeader, "time", 0)))}
+    {key, Transactions.to_elixir(transactions, timestamp_to_datetime(Map.get(woHeader, "timestamp", 0)))}
   end
 
   defp entry_to_elixir({"withdrawals" = key, nil}, _block) do
@@ -967,7 +1018,7 @@ defmodule EthereumJSONRPC.Block do
   end
 
   defp entry_to_elixir({key, quantity}, _block)
-       when key in ~w(difficulty gasLimit gasUsed minimumGasPrice baseFeePerGas number size cumulativeDifficulty totalDifficulty paidFees minimumGasPrice blobGasUsed excessBlobGas efficiencyScore thresholdCount expansionNumber uncledS nonce) and
+       when key in ~w(difficulty gasLimit gasUsed minimumGasPrice baseFeePerGas number size cumulativeDifficulty totalDifficulty paidFees minimumGasPrice blobGasUsed excessBlobGas efficiencyScore thresholdCount expansionNumber uncledEntropy nonce quaiStateSize stateLimit stateUsed exchangeRate quaiToQi qiToQuai) and
               not is_nil(quantity) do
     {key, quantity_to_integer(quantity)}
   end
