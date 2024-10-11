@@ -369,7 +369,6 @@ defmodule EthereumJSONRPC.Transaction do
           "type" => 2 = type,
           "blockHash" => block_hash,
           "blockNumber" => block_number,
-          "gas" => gas,
           "hash" => hash,
           "input" => input,
           "nonce" => nonce,
@@ -377,28 +376,26 @@ defmodule EthereumJSONRPC.Transaction do
           "chainId" => chain_id,
           "inputs" => inputs,
           "outputs" => outputs,
-          "utxoSignature" => utxo_signature,
-          "etxType" => etx_type
+          "utxoSignature" => utxo_signature
         } = _utxo_transaction
       ) do
     %{
       block_hash: block_hash,
       block_number: block_number,
-      gas: gas,
       hash: hash,
       input: input,
       inputs: inputs,
       outputs: outputs,
       nonce: nonce,
       index: transaction_index,
-      etx_type: etx_type,
       utxo_signature: utxo_signature,
       chain_id: chain_id,
       type: type,
       status: 1,
       gas_price: 0,
       gas_used: 0,
-      cumulative_gas_used: 0
+      cumulative_gas_used: 0,
+      gas: 0
     }
   end
 
