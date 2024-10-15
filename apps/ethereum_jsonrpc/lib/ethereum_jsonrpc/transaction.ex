@@ -264,13 +264,38 @@ defmodule EthereumJSONRPC.Transaction do
     |> chain_type_fields(elixir)
   end
 
-  @doc """
-  Quai Ledger transactions
-  Type = 0
+  # Pending transactions
+  def do_elixir_to_params(
+        %{
+          "blockHash" => nil,
+          "blockNumber" => nil,
+          "gas" => gas,
+          "hash" => hash,
+          "input" => input,
+          "nonce" => nonce,
+          "transactionIndex" => transaction_index,
+          "type" => type,
+          "value" => value,
+          "from" => from
+        } = _transaction
+      ) do
+    %{
+      block_hash: nil,
+      block_number: nil,
+      gas: gas,
+      hash: hash,
+      input: input,
+      nonce: nonce,
+      index: transaction_index,
+      type: type,
+      value: value,
+      from_address_hash: from,
+      status: nil,
+      gas_price: 0,
+      gas_used: 0
+    }
+  end
 
-  Etx Transactions
-  Type = 1 | 2
-  """
   def do_elixir_to_params(
         %{
           "type" => 0 = type,
@@ -278,16 +303,15 @@ defmodule EthereumJSONRPC.Transaction do
           "blockNumber" => block_number,
           "from" => from,
           "gas" => gas,
-          "maxFeePerGas" => max_fee_per_gas,
-          "maxPriorityFeePerGas" => max_priority_fee_per_gas,
+          "gasPrice" => max_fee_per_gas,
+          "minerTip" => max_priority_fee_per_gas,
           "hash" => hash,
           "input" => input,
           "nonce" => nonce,
           "transactionIndex" => transaction_index,
           "value" => value,
           "accessList" => access_list,
-          "chainId" => chain_id,
-          "etxType" => etx_type
+          "chainId" => chain_id
         } = transaction
       ) do
     result = %{
@@ -305,7 +329,6 @@ defmodule EthereumJSONRPC.Transaction do
       access_list: access_list,
       chain_id: chain_id,
       type: type,
-      etx_type: etx_type,
       status: 1,
       gas_price: 0,
       gas_used: 0,
@@ -396,38 +419,6 @@ defmodule EthereumJSONRPC.Transaction do
       gas_used: 0,
       cumulative_gas_used: 0,
       gas: 0
-    }
-  end
-
-  # # Default method, but no transaction should go through here
-  def do_elixir_to_params(
-        %{
-          "blockHash" => block_hash,
-          "blockNumber" => block_number,
-          "gas" => gas,
-          "hash" => hash,
-          "input" => input,
-          "nonce" => nonce,
-          "transactionIndex" => transaction_index,
-          "type" => type,
-          "value" => value,
-          "from" => from
-        } = _transaction
-      ) do
-    %{
-      block_hash: block_hash,
-      block_number: block_number,
-      gas: gas,
-      hash: hash,
-      input: input,
-      nonce: nonce,
-      index: transaction_index,
-      type: type,
-      value: value,
-      from_address_hash: from,
-      status: nil,
-      gas_price: 0,
-      gas_used: 0
     }
   end
 
@@ -855,7 +846,7 @@ defmodule EthereumJSONRPC.Transaction do
     do: {"input", value}
 
   defp entry_to_elixir({key, quantity})
-       when key in ~w(gas gasPrice nonce r s standardV v value type maxPriorityFeePerGas maxFeePerGas maxFeePerBlobGas etxIndex) and
+       when key in ~w(gas gasPrice nonce r s standardV v value type maxPriorityFeePerGas maxFeePerGas maxFeePerBlobGas etxIndex minerTip) and
               quantity != nil do
     {key, quantity_to_integer(quantity)}
   end
@@ -895,7 +886,11 @@ defmodule EthereumJSONRPC.Transaction do
     {:ignore, :ignore}
   end
 
-  defp entry_to_elixir(_) do
+  defp entry_to_elixir(entry) do
+    require Logger
+    Logger.info("====================================")
+    Logger.info("#{inspect(entry)}")
+    Logger.info("====================================")
     {nil, nil}
   end
 
